@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Guide d'Audit Cybersécurité</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <style>
         :root {
             --bg-primary: #ffffff;
@@ -444,18 +445,36 @@
         }
         
         .evidence-list li {
-            padding: 8px 0 8px 30px;
+            padding: 8px 0 8px 35px;
             position: relative;
             font-size: 13px;
             color: var(--text-secondary);
+            cursor: pointer;
+            transition: all 0.2s;
         }
         
-        .evidence-list li:before {
-            content: "□";
+        .evidence-list li:hover {
+            color: var(--text-primary);
+            background: var(--bg-info);
+            padding-left: 40px;
+            margin-left: -5px;
+            padding-right: 5px;
+            border-radius: 4px;
+        }
+        
+        .evidence-checkbox {
             position: absolute;
             left: 0;
-            font-size: 18px;
-            color: var(--accent-blue);
+            top: 8px;
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+            accent-color: var(--accent-blue);
+        }
+        
+        .evidence-list li.checked {
+            text-decoration: line-through;
+            opacity: 0.7;
         }
         
         .status-box {
@@ -507,6 +526,50 @@
             font-weight: bold;
         }
         
+        .action-box {
+            margin-top: 15px;
+            padding: 15px;
+            background: #fff8e1;
+            border-left: 4px solid #ffa726;
+            border-radius: 5px;
+        }
+        
+        .action-label {
+            display: block;
+            margin-bottom: 5px;
+            font-size: 13px;
+            font-weight: bold;
+            color: #f57c00;
+        }
+        
+        .action-textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ffb74d;
+            border-radius: 5px;
+            font-family: inherit;
+            font-size: 13px;
+            resize: vertical;
+            min-height: 60px;
+            background: #ffffff;
+            color: var(--text-primary);
+        }
+        
+        .action-textarea:focus {
+            outline: none;
+            border-color: #ff9800;
+            box-shadow: 0 0 0 2px rgba(255, 152, 0, 0.1);
+        }
+        
+        [data-theme="dark"] .action-box {
+            background: #3a2a1a;
+        }
+        
+        [data-theme="dark"] .action-textarea {
+            background: #2d2d2d;
+            border-color: #d97400;
+        }
+        
         .chart-container {
             margin: 30px 0;
             padding: 20px;
@@ -553,8 +616,8 @@
     <div id="toast" class="toast"></div>
     
     <nav class="sidebar" id="sidebar">
-        <div class="sidebar-header">
-            <h2>📋 Navigation</h2>
+                    <div class="sidebar-header">
+            <h2>Navigation</h2>
             <div class="progress-circle">
                 <svg width="80" height="80">
                     <circle cx="40" cy="40" r="35" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="6"/>
@@ -565,7 +628,7 @@
         </div>
         
         <div class="nav-section">
-            <h3>🏛️ Gouvernance</h3>
+            <h3>GOUVERNANCE</h3>
             <a href="#gouvernance" class="nav-link">
                 <span>Gestion des risques</span>
                 <div class="nav-stats"><span id="stat-gou">0/1</span></div>
@@ -573,7 +636,7 @@
         </div>
         
         <div class="nav-section">
-            <h3>🗂️ Ressources</h3>
+            <h3>RESSOURCES</h3>
             <a href="#ressources" class="nav-link">
                 <span>Cartographie & Réseau</span>
                 <div class="nav-stats"><span id="stat-res">0/9</span></div>
@@ -581,7 +644,7 @@
         </div>
         
         <div class="nav-section">
-            <h3>🔐 Contrôle d'accès</h3>
+            <h3>CONTRÔLE D'ACCÈS</h3>
             <a href="#acces" class="nav-link">
                 <span>Gestion des comptes</span>
                 <div class="nav-stats"><span id="stat-acc">0/9</span></div>
@@ -589,7 +652,7 @@
         </div>
         
         <div class="nav-section">
-            <h3>💻 Actifs</h3>
+            <h3>ACTIFS</h3>
             <a href="#actifs" class="nav-link">
                 <span>Sécurité des systèmes</span>
                 <div class="nav-stats"><span id="stat-act">0/6</span></div>
@@ -597,7 +660,7 @@
         </div>
         
         <div class="nav-section">
-            <h3>🏢 Physique</h3>
+            <h3>PHYSIQUE</h3>
             <a href="#physique" class="nav-link">
                 <span>Contrôles physiques</span>
                 <div class="nav-stats"><span id="stat-phy">0/2</span></div>
@@ -613,11 +676,12 @@
                     <h3 style="margin: 0;">Guide d'Audit Cybersécurité</h3>
                 </div>
                 <div class="controls">
-                    <button class="theme-toggle" onclick="toggleTheme()" title="Changer le thème">🌓</button>
-                    <button class="btn btn-secondary" onclick="saveProgress()">💾 Sauvegarder</button>
-                    <button class="btn btn-secondary" onclick="loadProgress()">📂 Charger</button>
-                    <button class="btn btn-success" onclick="exportJSON()">📥 JSON</button>
-                    <button class="btn btn-primary" onclick="window.print()">🖨️ Imprimer</button>
+                    <button class="lang-toggle" id="langBtn" onclick="toggleLanguage()" title="Change language">FR</button>
+                    <button class="theme-toggle" onclick="toggleTheme()" title="Changer le thème">Mode sombre/clair</button>
+                    <button class="btn btn-secondary" onclick="saveProgress()">Sauvegarder</button>
+                    <button class="btn btn-secondary" onclick="loadProgress()">Charger</button>
+                    <button class="btn btn-success" onclick="exportJSON()">Export JSON</button>
+                    <button class="btn btn-primary" onclick="window.print()">Imprimer</button>
                 </div>
             </div>
             
@@ -648,13 +712,13 @@
             </div>
             
             <div class="search-container no-print">
-                <input type="text" class="search-bar" id="searchBar" placeholder="🔍 Rechercher un point de contrôle..." onkeyup="searchCheckpoints()">
+                <input type="text" class="search-bar" id="searchBar" placeholder="Rechercher un point de contrôle..." onkeyup="searchCheckpoints()">
                 <div class="filter-buttons">
                     <button class="filter-btn active" onclick="filterByStatus('all')">Tous</button>
-                    <button class="filter-btn" onclick="filterByStatus('conforme')">✅ Conformes</button>
-                    <button class="filter-btn" onclick="filterByStatus('non-conforme')">❌ Non conformes</button>
-                    <button class="filter-btn" onclick="filterByStatus('partiel')">⚠️ Partiels</button>
-                    <button class="filter-btn" onclick="filterByStatus('na')">⚪ Non vérifiés</button>
+                    <button class="filter-btn" onclick="filterByStatus('conforme')">Conformes</button>
+                    <button class="filter-btn" onclick="filterByStatus('non-conforme')">Non conformes</button>
+                    <button class="filter-btn" onclick="filterByStatus('partiel')">Partiels</button>
+                    <button class="filter-btn" onclick="filterByStatus('na')">Non vérifiés</button>
                 </div>
             </div>
             
@@ -694,6 +758,257 @@
     </div>
 
     <script>
+        // Traductions
+        const translations = {
+            fr: {
+                // Navigation
+                navigation: "Navigation",
+                governance: "GOUVERNANCE",
+                resources: "RESSOURCES",
+                access: "CONTRÔLE D'ACCÈS",
+                assets: "ACTIFS",
+                physical: "PHYSIQUE",
+                
+                // Top bar
+                title: "Guide d'Audit Cybersécurité",
+                darkMode: "Mode sombre/clair",
+                save: "Sauvegarder",
+                load: "Charger",
+                exportJson: "Export JSON",
+                print: "Imprimer",
+                
+                // Dashboard
+                compliant: "Conformes",
+                nonCompliant: "Non conformes",
+                partial: "Partiels",
+                notVerified: "Non vérifiés",
+                pointsCompleted: "points complétés",
+                on: "sur",
+                
+                // Search & Filters
+                searchPlaceholder: "Rechercher un point de contrôle...",
+                all: "Tous",
+                compliantFilter: "Conformes",
+                nonCompliantFilter: "Non conformes",
+                partialFilter: "Partiels",
+                notVerifiedFilter: "Non vérifiés",
+                
+                // Form
+                subtitle: "Points de Contrôle - Système d'Information Industriel",
+                auditedSite: "Site audité :",
+                auditDate: "Date d'audit :",
+                auditor: "Auditeur :",
+                siteManager: "Responsable site :",
+                sitePlaceholder: "Nom du site",
+                auditorPlaceholder: "Nom de l'auditeur",
+                managerPlaceholder: "Nom du responsable",
+                
+                // Checkpoint
+                evidenceTitle: "Preuves à collecter :",
+                statusCompliant: "Conforme",
+                statusNonCompliant: "Non conforme",
+                statusPartial: "Partiel",
+                statusNA: "N/A",
+                comments: "Commentaires :",
+                commentsPlaceholder: "Observations et détails constatés lors de l'audit...",
+                actions: "Actions de remédiation :",
+                actionsPlaceholder: "Actions correctives recommandées, priorité, responsable, délai...",
+                
+                // Chart
+                chartTitle: "Répartition par statut",
+                
+                // Toast messages
+                themeDark: "Thème sombre activé",
+                themeLight: "Thème clair activé",
+                saved: "Progression sauvegardée !",
+                loaded: "Données chargées automatiquement",
+                exported: "Export JSON réussi !",
+                noData: "Aucune donnée à exporter"
+            },
+            en: {
+                // Navigation
+                navigation: "Navigation",
+                governance: "GOVERNANCE",
+                resources: "RESOURCES",
+                access: "ACCESS CONTROL",
+                assets: "ASSETS",
+                physical: "PHYSICAL",
+                
+                // Top bar
+                title: "Cybersecurity Audit Guide",
+                darkMode: "Dark/Light Mode",
+                save: "Save",
+                load: "Load",
+                exportJson: "Export JSON",
+                print: "Print",
+                
+                // Dashboard
+                compliant: "Compliant",
+                nonCompliant: "Non-compliant",
+                partial: "Partial",
+                notVerified: "Not verified",
+                pointsCompleted: "checkpoints completed",
+                on: "of",
+                
+                // Search & Filters
+                searchPlaceholder: "Search for a checkpoint...",
+                all: "All",
+                compliantFilter: "Compliant",
+                nonCompliantFilter: "Non-compliant",
+                partialFilter: "Partial",
+                notVerifiedFilter: "Not verified",
+                
+                // Form
+                subtitle: "Control Points - Industrial Information System",
+                auditedSite: "Audited site:",
+                auditDate: "Audit date:",
+                auditor: "Auditor:",
+                siteManager: "Site manager:",
+                sitePlaceholder: "Site name",
+                auditorPlaceholder: "Auditor name",
+                managerPlaceholder: "Manager name",
+                
+                // Checkpoint
+                evidenceTitle: "Evidence to collect:",
+                statusCompliant: "Compliant",
+                statusNonCompliant: "Non-compliant",
+                statusPartial: "Partial",
+                statusNA: "N/A",
+                comments: "Comments:",
+                commentsPlaceholder: "Observations and details noted during the audit...",
+                actions: "Remediation actions:",
+                actionsPlaceholder: "Recommended corrective actions, priority, responsible, deadline...",
+                
+                // Chart
+                chartTitle: "Status Distribution",
+                
+                // Toast messages
+                themeDark: "Dark theme enabled",
+                themeLight: "Light theme enabled",
+                saved: "Progress saved!",
+                loaded: "Data loaded automatically",
+                exported: "JSON export successful!",
+                noData: "No data to export"
+            }
+        };
+
+        let currentLang = localStorage.getItem('language') || 'fr';
+
+        // Fonction pour traduire
+        function t(key) {
+            return translations[currentLang][key] || key;
+        }
+
+        // Changer de langue
+        function toggleLanguage() {
+            currentLang = currentLang === 'fr' ? 'en' : 'fr';
+            localStorage.setItem('language', currentLang);
+            
+            // Régénérer les checkpoints avec la nouvelle langue
+            generateCheckpoints();
+            
+            // Restaurer les données
+            loadFromStorage();
+            
+            // Mettre à jour l'interface
+            updateLanguage();
+            
+            showToast(currentLang === 'fr' ? 'Langue: Français' : 'Language: English');
+        }
+
+        // Mettre à jour l'interface avec la langue
+        function updateLanguage() {
+            // Bouton de langue
+            const langBtn = document.getElementById('langBtn');
+            if (langBtn) langBtn.textContent = currentLang === 'fr' ? 'EN' : 'FR';
+            
+            // Sidebar
+            const sidebarTitle = document.querySelector('.sidebar-header h2');
+            if (sidebarTitle) sidebarTitle.textContent = t('navigation');
+            
+            const navSections = document.querySelectorAll('.nav-section h3');
+            if (navSections.length >= 5) {
+                navSections[0].textContent = t('governance');
+                navSections[1].textContent = t('resources');
+                navSections[2].textContent = t('access');
+                navSections[3].textContent = t('assets');
+                navSections[4].textContent = t('physical');
+            }
+            
+            // Top bar
+            const topBarTitle = document.querySelector('.top-bar h3');
+            if (topBarTitle) topBarTitle.textContent = t('title');
+            
+            const themeToggle = document.querySelector('.theme-toggle');
+            if (themeToggle) themeToggle.textContent = t('darkMode');
+            
+            const buttons = document.querySelectorAll('.btn-secondary');
+            if (buttons.length >= 2) {
+                buttons[0].textContent = t('save');
+                buttons[1].textContent = t('load');
+            }
+            
+            const successBtn = document.querySelector('.btn-success');
+            if (successBtn) successBtn.textContent = t('exportJson');
+            
+            const printBtn = document.querySelectorAll('.btn-primary')[1];
+            if (printBtn) printBtn.textContent = t('print');
+            
+            // Dashboard cards
+            const statCards = document.querySelectorAll('.stat-label');
+            if (statCards.length >= 4) {
+                statCards[0].textContent = t('compliant');
+                statCards[1].textContent = t('nonCompliant');
+                statCards[2].textContent = t('partial');
+                statCards[3].textContent = t('notVerified');
+            }
+            
+            // Search
+            const searchBar = document.getElementById('searchBar');
+            if (searchBar) searchBar.placeholder = t('searchPlaceholder');
+            
+            const filterBtns = document.querySelectorAll('.filter-btn');
+            if (filterBtns.length >= 5) {
+                filterBtns[0].textContent = t('all');
+                filterBtns[1].textContent = t('compliantFilter');
+                filterBtns[2].textContent = t('nonCompliantFilter');
+                filterBtns[3].textContent = t('partialFilter');
+                filterBtns[4].textContent = t('notVerifiedFilter');
+            }
+            
+            // Header
+            const headerTitle = document.querySelector('.header h1');
+            if (headerTitle) headerTitle.textContent = t('title');
+            
+            const subtitle = document.querySelector('.subtitle');
+            if (subtitle) subtitle.textContent = t('subtitle');
+            
+            // Info section
+            const infoLabels = document.querySelectorAll('.info-field label');
+            if (infoLabels.length >= 4) {
+                infoLabels[0].textContent = t('auditedSite');
+                infoLabels[1].textContent = t('auditDate');
+                infoLabels[2].textContent = t('auditor');
+                infoLabels[3].textContent = t('siteManager');
+            }
+            
+            const siteInput = document.getElementById('site');
+            if (siteInput) siteInput.placeholder = t('sitePlaceholder');
+            
+            const auditorInput = document.getElementById('auditor');
+            if (auditorInput) auditorInput.placeholder = t('auditorPlaceholder');
+            
+            const responsibleInput = document.getElementById('responsible');
+            if (responsibleInput) responsibleInput.placeholder = t('managerPlaceholder');
+            
+            // Chart title
+            const chartTitle = document.querySelector('.chart-container h3');
+            if (chartTitle) chartTitle.textContent = t('chartTitle');
+            
+            // Update progress label
+            updateAllStats();
+        }
+
         // Configuration des checkpoints
         const checkpoints = {
             gouvernance: [
@@ -871,11 +1186,11 @@
         };
 
         const categoryIcons = {
-            gouvernance: '🏛️',
-            ressources: '🗂️',
-            acces: '🔐',
-            actifs: '💻',
-            physique: '🏢'
+            gouvernance: '',
+            ressources: '',
+            acces: '',
+            actifs: '',
+            physique: ''
         };
 
         const categoryTitles = {
@@ -915,19 +1230,28 @@
                                 <span class="checkpoint-status" style="display:none"></span>
                             </div>
                             <div class="checkpoint-desc">${point.desc}</div>
-                            <div class="evidence-title">Preuves à collecter :</div>
+                            <div class="evidence-title">${t('evidenceTitle')}</div>
                             <ul class="evidence-list">
-                                ${point.evidence.map(e => `<li>${e}</li>`).join('')}
+                                ${point.evidence.map((e, idx) => `
+                                    <li onclick="toggleEvidence('${point.id}', ${idx})">
+                                        <input type="checkbox" class="evidence-checkbox" id="${point.id}-ev-${idx}" onchange="saveToStorage()">
+                                        <label for="${point.id}-ev-${idx}" style="cursor: pointer; margin-left: 5px;">${e}</label>
+                                    </li>
+                                `).join('')}
                             </ul>
                             <div class="status-box">
                                 <div class="status-options">
-                                    <label><input type="radio" name="${point.id}" value="conforme" onchange="updateStatus('${point.id}')"> ✅ Conforme</label>
-                                    <label><input type="radio" name="${point.id}" value="non-conforme" onchange="updateStatus('${point.id}')"> ❌ Non conforme</label>
-                                    <label><input type="radio" name="${point.id}" value="partiel" onchange="updateStatus('${point.id}')"> ⚠️ Partiel</label>
-                                    <label><input type="radio" name="${point.id}" value="na" onchange="updateStatus('${point.id}')"> ⚪ N/A</label>
+                                    <label><input type="radio" name="${point.id}" value="conforme" onchange="updateStatus('${point.id}')"> ${t('statusCompliant')}</label>
+                                    <label><input type="radio" name="${point.id}" value="non-conforme" onchange="updateStatus('${point.id}')"> ${t('statusNonCompliant')}</label>
+                                    <label><input type="radio" name="${point.id}" value="partiel" onchange="updateStatus('${point.id}')"> ${t('statusPartial')}</label>
+                                    <label><input type="radio" name="${point.id}" value="na" onchange="updateStatus('${point.id}')"> ${t('statusNA')}</label>
                                 </div>
-                                <label class="comment-label">Commentaires :</label>
-                                <textarea class="comment-box" data-comment="${point.id}" onchange="saveToStorage()"></textarea>
+                                <label class="comment-label">${t('comments')}</label>
+                                <textarea class="comment-box" data-comment="${point.id}" onchange="saveToStorage()" placeholder="${t('commentsPlaceholder')}"></textarea>
+                            </div>
+                            <div class="action-box">
+                                <label class="action-label">${t('actions')}</label>
+                                <textarea class="action-textarea" data-action="${point.id}" onchange="saveToStorage()" placeholder="${t('actionsPlaceholder')}"></textarea>
                             </div>
                         </div>
                     `;
@@ -941,10 +1265,21 @@
 
         // Initialisation
         document.addEventListener('DOMContentLoaded', function() {
+            // Charger la langue sauvegardée
+            currentLang = localStorage.getItem('language') || 'fr';
+            
+            // Générer le contenu
             generateCheckpoints();
             initChart();
+            
+            // Charger les données sauvegardées
             loadFromStorage();
-            updateAllStats();
+            
+            // Appliquer la langue (après que le DOM soit prêt)
+            setTimeout(() => {
+                updateLanguage();
+                updateAllStats();
+            }, 100);
         });
 
         // Gestion du thème
@@ -954,7 +1289,7 @@
             const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
             html.setAttribute('data-theme', newTheme);
             localStorage.setItem('theme', newTheme);
-            showToast('Thème ' + (newTheme === 'dark' ? 'sombre' : 'clair') + ' activé');
+            showToast(newTheme === 'dark' ? t('themeDark') : t('themeLight'));
         }
 
         // Charger le thème sauvegardé
@@ -969,6 +1304,20 @@
             const mainContent = document.getElementById('mainContent');
             sidebar.classList.toggle('collapsed');
             mainContent.classList.toggle('expanded');
+        }
+
+        // Toggle evidence checkbox
+        function toggleEvidence(checkpointId, evidenceIndex) {
+            const checkbox = document.getElementById(`${checkpointId}-ev-${evidenceIndex}`);
+            const li = checkbox.parentElement;
+            
+            if (checkbox.checked) {
+                li.classList.add('checked');
+            } else {
+                li.classList.remove('checked');
+            }
+            
+            saveToStorage();
         }
 
         // Mise à jour du statut d'un checkpoint
@@ -989,9 +1338,9 @@
                 statusBadge.style.display = 'block';
                 statusBadge.className = 'checkpoint-status status-' + selectedValue;
                 statusBadge.textContent = {
-                    'conforme': '✅ Conforme',
-                    'non-conforme': '❌ Non conforme',
-                    'partiel': '⚠️ Partiel'
+                    'conforme': 'Conforme',
+                    'non-conforme': 'Non conforme',
+                    'partiel': 'Partiel'
                 }[selectedValue];
             } else {
                 statusBadge.style.display = 'none';
@@ -1008,6 +1357,7 @@
             let nonConforme = 0;
             let partiel = 0;
             let na = 0;
+            let completed = 0; // Nombre total de réponses (incluant N/A)
             
             const categoryStats = {};
             
@@ -1024,6 +1374,7 @@
                     radios.forEach(radio => {
                         if (radio.checked) {
                             checked = true;
+                            completed++; // Compte toutes les réponses, y compris N/A
                             categoryStats[category].completed++;
                             
                             switch(radio.value) {
@@ -1034,8 +1385,6 @@
                             }
                         }
                     });
-                    
-                    if (!checked) na++;
                 });
             });
             
@@ -1043,13 +1392,12 @@
             document.getElementById('conformeCount').textContent = conforme;
             document.getElementById('nonConformeCount').textContent = nonConforme;
             document.getElementById('partielCount').textContent = partiel;
-            document.getElementById('naCount').textContent = na;
+            document.getElementById('naCount').textContent = total - completed; // Seulement les non-répondus
             
-            // Mise à jour de la barre de progression
-            const completed = conforme + nonConforme + partiel;
+            // Mise à jour de la barre de progression basée sur TOUTES les réponses
             const percentage = Math.round((completed / total) * 100);
             document.getElementById('progressBar').style.width = percentage + '%';
-            document.getElementById('progressLabel').textContent = `${completed} sur ${total} points complétés (${percentage}%)`;
+            document.getElementById('progressLabel').textContent = `${completed} ${t('on')} ${total} ${t('pointsCompleted')} (${percentage}%)`;
             document.getElementById('progressText').textContent = percentage + '%';
             
             // Mise à jour du cercle de progression
@@ -1134,9 +1482,23 @@
                     
                     const comment = document.querySelector(`[data-comment="${point.id}"]`).value;
                     
+                    // Récupérer les actions de remédiation
+                    const action = document.querySelector(`[data-action="${point.id}"]`).value;
+                    
+                    // Sauvegarder les preuves cochées
+                    const evidenceChecked = [];
+                    point.evidence.forEach((ev, idx) => {
+                        const checkbox = document.getElementById(`${point.id}-ev-${idx}`);
+                        if (checkbox && checkbox.checked) {
+                            evidenceChecked.push(idx);
+                        }
+                    });
+                    
                     data.checkpoints[point.id] = {
                         status: status,
-                        comment: comment
+                        comment: comment,
+                        action: action,
+                        evidenceChecked: evidenceChecked
                     };
                 });
             });
@@ -1172,9 +1534,26 @@
                         const commentBox = document.querySelector(`[data-comment="${checkpointId}"]`);
                         if (commentBox) commentBox.value = checkpoint.comment;
                     }
+                    
+                    // Restaurer les actions de remédiation
+                    if (checkpoint.action) {
+                        const actionBox = document.querySelector(`[data-action="${checkpointId}"]`);
+                        if (actionBox) actionBox.value = checkpoint.action;
+                    }
+                    
+                    // Restaurer les preuves cochées
+                    if (checkpoint.evidenceChecked && checkpoint.evidenceChecked.length > 0) {
+                        checkpoint.evidenceChecked.forEach(idx => {
+                            const checkbox = document.getElementById(`${checkpointId}-ev-${idx}`);
+                            if (checkbox) {
+                                checkbox.checked = true;
+                                checkbox.parentElement.classList.add('checked');
+                            }
+                        });
+                    }
                 });
                 
-                showToast('Données chargées automatiquement');
+                showToast(t('loaded'));
             } catch (e) {
                 console.error('Erreur lors du chargement:', e);
             }
@@ -1183,7 +1562,7 @@
         // Sauvegarde manuelle
         function saveProgress() {
             saveToStorage();
-            showToast('✅ Progression sauvegardée !');
+            showToast(t('saved'));
         }
 
         // Chargement manuel
@@ -1196,7 +1575,7 @@
         function exportJSON() {
             const stored = localStorage.getItem('auditData');
             if (!stored) {
-                showToast('Aucune donnée à exporter', true);
+                showToast(t('noData'), true);
                 return;
             }
             
@@ -1208,7 +1587,7 @@
             a.download = `audit-${data.site || 'site'}-${data.auditDate || 'date'}.json`;
             a.click();
             URL.revokeObjectURL(url);
-            showToast('📥 Export JSON réussi !');
+            showToast(t('exported'));
         }
 
         // Recherche de checkpoints
@@ -1236,16 +1615,35 @@
             document.querySelectorAll('.filter-btn').forEach(btn => {
                 btn.classList.remove('active');
             });
-            event.target.classList.add('active');
+            
+            // Trouver et activer le bon bouton
+            const buttons = document.querySelectorAll('.filter-btn');
+            buttons.forEach(btn => {
+                const btnText = btn.textContent.toLowerCase();
+                if (
+                    (status === 'all' && btnText.includes('tous')) ||
+                    (status === 'conforme' && btnText.includes('conformes') && !btnText.includes('non')) ||
+                    (status === 'non-conforme' && btnText.includes('non conformes')) ||
+                    (status === 'partiel' && btnText.includes('partiels')) ||
+                    (status === 'na' && btnText.includes('non vérifiés'))
+                ) {
+                    btn.classList.add('active');
+                }
+            });
             
             allCheckpoints.forEach(checkpoint => {
                 const checkpointId = checkpoint.getAttribute('data-id');
                 const radios = document.getElementsByName(checkpointId);
-                let checkpointStatus = 'na';
+                let checkpointStatus = null;
                 
                 radios.forEach(radio => {
                     if (radio.checked) checkpointStatus = radio.value;
                 });
+                
+                // Si aucun statut n'est sélectionné, on considère que c'est "na" (non vérifié)
+                if (!checkpointStatus) {
+                    checkpointStatus = 'na';
+                }
                 
                 if (status === 'all' || checkpointStatus === status) {
                     checkpoint.classList.remove('hidden');
