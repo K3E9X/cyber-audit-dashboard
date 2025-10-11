@@ -1,6 +1,6 @@
 # cyber-audit-dashboard
 Application web interactive pour audits de cybersécurité industriels
-# 🛡️ Cyber Audit Dashboard
+# Cyber Audit Dashboard
 
 > Application web interactive pour réaliser des audits de cybersécurité sur sites industriels
 
@@ -8,52 +8,51 @@ Application web interactive pour audits de cybersécurité industriels
 [![GitHub stars](https://img.shields.io/github/stars/K3E9X/cyber-audit-dashboard?style=social)](https://github.com/K3E9X/cyber-audit-dashboard)
 [![GitHub forks](https://img.shields.io/github/forks/K3E9X/cyber-audit-dashboard?style=social)](https://github.com/K3E9X/cyber-audit-dashboard/fork)
 
-## 🚀 Démo en ligne
+## Démo en ligne
 
-👉 **[Lancer l'application](https://k3e9x.github.io/cyber-audit-dashboard/)**
+**[Lancer l'application](https://k3e9x.github.io/cyber-audit-dashboard/)**
 
-![Dashboard Preview](./screenshots/dashboard-light.png)
 
-## ✨ Fonctionnalités
+## Fonctionnalités
 
-### 📊 Dashboard interactif
+### Dashboard interactif
 - **Statistiques en temps réel** : Visualisation instantanée de l'état d'avancement
 - **Graphiques dynamiques** : Répartition des conformités avec Chart.js
 - **Barre de progression** : Suivi visuel du pourcentage de complétion
 
-### 💾 Sauvegarde intelligente
+### Sauvegarde intelligente
 - **Auto-save** : Sauvegarde automatique toutes les 30 secondes
 - **LocalStorage** : Aucune perte de données, même en fermant le navigateur
 - **Export JSON** : Sauvegarde et partage de vos audits
 
-### 🔍 Recherche & Filtrage
+### Recherche & Filtrage
 - **Recherche instantanée** : Trouvez rapidement un point de contrôle
 - **Filtres par statut** : Conformes, Non conformes, Partiels, Non vérifiés
 - **Navigation intelligente** : Sidebar avec progression par catégorie
 
-### 🎨 Interface moderne
+### Interface moderne
 - **Mode sombre/clair** : Confort visuel adapté à votre environnement
 - **Responsive design** : Fonctionne sur desktop, tablette et mobile
 - **Animations fluides** : Expérience utilisateur soignée
 
-### 📱 Optimisé pour le terrain
+### Optimisé pour le terrain
 - **Utilisation hors-ligne** : Fonctionne sans connexion internet
 - **Impression optimisée** : Format A4 prêt pour l'impression
 - **Commentaires détaillés** : Zone de texte pour chaque point de contrôle
 
-## 📋 Points de contrôle couverts
+## Points de contrôle couverts
 
 L'application couvre **27 points de contrôle** répartis en **5 catégories** :
 
 | Catégorie | Points | Description |
 |-----------|--------|-------------|
-| 🏛️ **Gouvernance** | 1 | Gestion des risques et pilotage |
-| 🗂️ **Ressources** | 9 | Cartographie, réseau, infrastructure |
-| 🔐 **Contrôle d'accès** | 9 | Gestion des comptes et authentification |
-| 💻 **Actifs** | 6 | Sécurité des systèmes et postes |
-| 🏢 **Physique** | 2 | Contrôles d'accès physiques |
+| **Gouvernance** | 1 | Gestion des risques et pilotage |
+| **Ressources** | 9 | Cartographie, réseau, infrastructure |
+| **Contrôle d'accès** | 9 | Gestion des comptes et authentification |
+| **Actifs** | 6 | Sécurité des systèmes et postes |
+| **Physique** | 2 | Contrôles d'accès physiques |
 
-## 🎯 Utilisation
+## Utilisation
 
 ### Démarrage rapide
 
@@ -83,7 +82,7 @@ L'application couvre **27 points de contrôle** répartis en **5 catégories** :
    └─ Imprimez pour signature et classement
 ```
 
-## 🛠️ Installation locale
+## Installation locale
 
 ### Option 1 : Utilisation directe
 Ouvrez simplement `index.html` dans votre navigateur. Aucune installation requise !
@@ -106,26 +105,8 @@ python -m http.server 8000
 ### Option 3 : Via GitHub Pages
 L'application est déjà déployée et accessible directement en ligne !
 
-## 📊 Captures d'écran
 
-<details>
-<summary>🖼️ Voir plus de captures</summary>
-
-### Mode clair
-![Mode clair](./screenshots/dashboard-light.png)
-
-### Mode sombre
-![Mode sombre](./screenshots/dashboard-dark.png)
-
-### Vue mobile
-![Mobile](./screenshots/mobile-view.png)
-
-### Graphiques
-![Graphiques](./screenshots/charts.png)
-
-</details>
-
-## 🔄 Format des données
+## Format des données
 
 ### Export JSON
 ```json
@@ -147,7 +128,7 @@ L'application est déjà déployée et accessible directement en ligne !
 }
 ```
 
-## 🎨 Personnalisation
+## Personnalisation
 
 ### Thèmes
 L'application supporte automatiquement les modes clair et sombre. Le thème choisi est sauvegardé dans le localStorage.
@@ -168,7 +149,7 @@ const checkpoints = {
 };
 ```
 
-## 🤝 Contribution
+## Contribution
 
 Les contributions sont les bienvenues ! Voici comment contribuer :
 
@@ -178,7 +159,7 @@ Les contributions sont les bienvenues ! Voici comment contribuer :
 4. **Poussez** vers la branche (`git push origin feature/AmazingFeature`)
 5. **Ouvrez** une Pull Request
 
-## 📝 Roadmap
+## Roadmap
 
 - [ ] Import de fichiers JSON
 - [ ] Export PDF avancé avec jsPDF
@@ -189,11 +170,11 @@ Les contributions sont les bienvenues ! Voici comment contribuer :
 - [ ] Application mobile native
 - [ ] Génération automatique de rapports
 
-## 🐛 Bugs connus
+## Bugs connus
 
 Consultez les [Issues](https://github.com/K3E9X/cyber-audit-dashboard/issues) pour voir les bugs connus et les fonctionnalités en cours de développement.
 
-## 📜 Licence
+## Licence
 
 Ce projet est sous licence MIT. Voir le fichier [LICENSE](LICENSE) pour plus de détails.
 
@@ -203,12 +184,12 @@ Ce projet est sous licence MIT. Voir le fichier [LICENSE](LICENSE) pour plus de 
 - **[Documentation complète](./docs/user-guide.md)** - Guide utilisateur détaillé
 - **[Changelog](./CHANGELOG.md)** - Historique des versions
 
-## 👤 Auteur
+## Auteur
 
 **K3E9X**
 - GitHub: [@K3E9X](https://github.com/K3E9X)
 
-## 🙏 Remerciements
+## Remerciements
 
 - [Chart.js](https://www.chartjs.org/) pour les graphiques
 - La communauté open-source
