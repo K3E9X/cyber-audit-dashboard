@@ -3,9 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Guide d'Audit Cybersécurité</title>
+    <title>Guide d'Audit Cybersécurité - Avec Historique</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
         :root {
             --bg-primary: #ffffff;
@@ -21,8 +23,12 @@
             --accent-blue: #3498db;
             --accent-green: #16a085;
             --shadow: rgba(0,0,0,0.1);
+            --conforme: #27ae60;
+            --non-conforme: #e74c3c;
+            --partiel: #f39c12;
+            --na: #95a5a6;
         }
-        
+
         [data-theme="dark"] {
             --bg-primary: #1e1e1e;
             --bg-secondary: #2d2d2d;
@@ -36,23 +42,9 @@
             --border-color: #444;
             --shadow: rgba(0,0,0,0.3);
         }
-        
+
         * { box-sizing: border-box; margin: 0; padding: 0; }
-        
-        @media print {
-            body { margin: 0; background: white !important; }
-            .page-break { page-break-after: always; }
-            .no-print { display: none !important; }
-            .sidebar { display: none !important; }
-            .main-content { margin-left: 0 !important; }
-            .checkpoint { break-inside: avoid; }
-            [data-theme="dark"] {
-                --bg-primary: #ffffff;
-                --text-primary: #333;
-                --bg-checkpoint: #f8f9fa;
-            }
-        }
-        
+
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             line-height: 1.6;
@@ -60,7 +52,7 @@
             background: var(--bg-secondary);
             transition: all 0.3s ease;
         }
-        
+
         .sidebar {
             position: fixed;
             left: 0;
@@ -74,37 +66,19 @@
             z-index: 1000;
             transition: transform 0.3s ease;
         }
-        
+
         .sidebar.collapsed { transform: translateX(-280px); }
-        
+
         .sidebar-header {
             margin-bottom: 30px;
             padding-bottom: 20px;
             border-bottom: 2px solid rgba(255,255,255,0.1);
         }
-        
+
         .sidebar-header h2 { margin: 0 0 10px 0; font-size: 18px; }
-        
-        .progress-circle {
-            width: 80px;
-            height: 80px;
-            margin: 20px auto;
-            position: relative;
-        }
-        
-        .progress-circle svg { transform: rotate(-90deg); }
-        
-        .progress-text {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            font-size: 20px;
-            font-weight: bold;
-        }
-        
+
         .nav-section { margin-bottom: 25px; }
-        
+
         .nav-section h3 {
             font-size: 14px;
             color: var(--accent-blue);
@@ -112,7 +86,7 @@
             text-transform: uppercase;
             letter-spacing: 1px;
         }
-        
+
         .nav-link {
             display: block;
             padding: 10px 15px;
@@ -122,39 +96,38 @@
             transition: all 0.2s;
             font-size: 14px;
             margin-bottom: 5px;
+            cursor: pointer;
         }
-        
+
         .nav-link:hover {
             background: rgba(255,255,255,0.1);
             color: white;
             transform: translateX(5px);
         }
-        
-        .nav-stats {
-            display: flex;
-            justify-content: space-between;
-            font-size: 12px;
-            color: var(--text-light);
-            margin-top: 5px;
+
+        .nav-link.active {
+            background: var(--accent-blue);
+            color: white;
         }
-        
+
         .main-content {
             margin-left: 280px;
             padding: 20px;
             transition: margin-left 0.3s ease;
+            min-height: 100vh;
         }
-        
+
         .main-content.expanded { margin-left: 0; }
-        
+
         .container {
             background: var(--bg-primary);
             padding: 30px;
             box-shadow: 0 0 20px var(--shadow);
-            max-width: 1200px;
+            max-width: 1400px;
             margin: 0 auto;
             border-radius: 10px;
         }
-        
+
         .top-bar {
             display: flex;
             justify-content: space-between;
@@ -167,14 +140,14 @@
             flex-wrap: wrap;
             gap: 15px;
         }
-        
+
         .controls {
             display: flex;
             gap: 10px;
             align-items: center;
             flex-wrap: wrap;
         }
-        
+
         .btn {
             padding: 10px 20px;
             border: none;
@@ -186,32 +159,51 @@
             align-items: center;
             gap: 8px;
         }
-        
+
         .btn-primary {
             background: var(--accent-blue);
             color: white;
         }
-        
+
         .btn-primary:hover {
             background: #2980b9;
             transform: translateY(-2px);
             box-shadow: 0 4px 8px var(--shadow);
         }
-        
+
         .btn-secondary {
             background: var(--bg-info);
             color: var(--text-primary);
         }
-        
+
         .btn-secondary:hover { background: #d5dbdd; }
-        
+
         .btn-success {
             background: #27ae60;
             color: white;
         }
-        
+
         .btn-success:hover { background: #229954; }
-        
+
+        .btn-danger {
+            background: #e74c3c;
+            color: white;
+        }
+
+        .btn-danger:hover { background: #c0392b; }
+
+        .btn-warning {
+            background: #f39c12;
+            color: white;
+        }
+
+        .btn-warning:hover { background: #e67e22; }
+
+        .btn-small {
+            padding: 5px 10px;
+            font-size: 12px;
+        }
+
         .toggle-sidebar, .theme-toggle {
             background: transparent;
             border: 1px solid var(--border-color);
@@ -221,1162 +213,873 @@
             padding: 8px 12px;
             border-radius: 5px;
         }
-        
-        .progress-bar-container {
-            height: 8px;
-            background: var(--bg-info);
-            border-radius: 10px;
-            overflow: hidden;
-            margin: 20px 0;
-        }
-        
-        .progress-bar-fill {
-            height: 100%;
-            background: linear-gradient(90deg, #3498db, #2ecc71);
-            width: 0%;
-            transition: width 0.5s ease;
-        }
-        
-        .progress-label {
-            text-align: center;
-            font-size: 14px;
-            color: var(--text-secondary);
-            margin-top: 5px;
-        }
-        
-        .header {
-            text-align: center;
-            border-bottom: 3px solid var(--bg-header);
-            padding-bottom: 20px;
-            margin-bottom: 30px;
-        }
-        
-        h1 { color: var(--text-primary); font-size: 28px; }
-        
-        .subtitle {
-            color: var(--text-light);
-            margin-top: 10px;
-            font-size: 14px;
-        }
-        
-        .info-section {
-            background: var(--bg-info);
-            padding: 20px;
-            border-radius: 8px;
-            margin-bottom: 30px;
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 15px;
-        }
-        
-        .info-field {
-            display: flex;
-            flex-direction: column;
-        }
-        
-        .info-field label {
-            font-weight: bold;
-            margin-bottom: 5px;
-            font-size: 13px;
-        }
-        
-        .info-field input {
-            padding: 10px;
-            border: 1px solid var(--border-color);
-            border-radius: 5px;
-            background: var(--bg-primary);
-            color: var(--text-primary);
-            font-size: 14px;
-        }
-        
-        .dashboard {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 20px;
-            margin-bottom: 30px;
-        }
-        
-        .stat-card {
-            background: linear-gradient(135deg, var(--accent-blue), #2980b9);
-            color: white;
-            padding: 20px;
-            border-radius: 10px;
-            text-align: center;
-            box-shadow: 0 4px 15px var(--shadow);
-        }
-        
-        .stat-card.green { background: linear-gradient(135deg, #27ae60, #229954); }
-        .stat-card.orange { background: linear-gradient(135deg, #f39c12, #e67e22); }
-        .stat-card.red { background: linear-gradient(135deg, #e74c3c, #c0392b); }
-        
-        .stat-number {
-            font-size: 36px;
-            font-weight: bold;
-            margin: 10px 0;
-        }
-        
-        .stat-label {
-            font-size: 14px;
-            opacity: 0.9;
-        }
-        
-        .search-container { margin-bottom: 20px; }
-        
-        .search-bar {
-            width: 100%;
-            padding: 12px 20px;
-            border: 2px solid var(--border-color);
-            border-radius: 8px;
-            font-size: 16px;
-            background: var(--bg-primary);
-            color: var(--text-primary);
-        }
-        
-        .search-bar:focus {
-            outline: none;
-            border-color: var(--accent-blue);
-        }
-        
-        .filter-buttons {
-            display: flex;
-            gap: 10px;
-            margin-top: 10px;
-            flex-wrap: wrap;
-        }
-        
-        .filter-btn {
-            padding: 8px 16px;
-            border: 1px solid var(--border-color);
-            background: var(--bg-primary);
-            color: var(--text-primary);
-            border-radius: 20px;
-            cursor: pointer;
-            font-size: 13px;
-            transition: all 0.2s;
-        }
-        
-        .filter-btn:hover, .filter-btn.active {
-            background: var(--accent-blue);
-            color: white;
-            border-color: var(--accent-blue);
-        }
-        
-        .category { margin-bottom: 35px; }
-        
-        .category-title {
-            background: var(--bg-category);
-            color: white;
-            padding: 15px 20px;
-            font-size: 18px;
-            font-weight: bold;
-            margin-bottom: 15px;
-            border-radius: 8px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            cursor: pointer;
-        }
-        
-        .category-progress {
-            font-size: 14px;
-            background: rgba(255,255,255,0.2);
-            padding: 5px 15px;
-            border-radius: 20px;
-        }
-        
-        .checkpoint {
-            margin-bottom: 25px;
-            padding: 20px;
-            border-left: 4px solid var(--accent-blue);
-            background: var(--bg-checkpoint);
-            border-radius: 5px;
-            transition: all 0.3s;
-        }
-        
-        .checkpoint:hover {
-            box-shadow: 0 4px 15px var(--shadow);
-            transform: translateY(-2px);
-        }
-        
-        .checkpoint.hidden { display: none; }
-        
-        .checkpoint-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: start;
-            margin-bottom: 15px;
-        }
-        
-        .checkpoint-id {
-            font-weight: bold;
-            color: var(--text-primary);
-            font-size: 15px;
-            flex: 1;
-        }
-        
-        .checkpoint-status {
-            padding: 5px 12px;
-            border-radius: 20px;
-            font-size: 12px;
-            font-weight: bold;
-        }
-        
-        .status-conforme { background: #d4edda; color: #155724; }
-        .status-non-conforme { background: #f8d7da; color: #721c24; }
-        .status-partiel { background: #fff3cd; color: #856404; }
-        
-        .checkpoint-desc {
-            color: var(--text-secondary);
-            margin-bottom: 15px;
-            font-size: 14px;
-        }
-        
-        .evidence-title {
-            font-weight: bold;
-            color: var(--accent-green);
-            margin-bottom: 10px;
-            font-size: 14px;
-        }
-        
-        .evidence-list {
-            list-style: none;
-            padding-left: 0;
-            margin-bottom: 15px;
-        }
-        
-        .evidence-list li {
-            padding: 8px 0 8px 35px;
-            position: relative;
-            font-size: 13px;
-            color: var(--text-secondary);
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-        
-        .evidence-list li:hover {
-            color: var(--text-primary);
-            background: var(--bg-info);
-            padding-left: 40px;
-            margin-left: -5px;
-            padding-right: 5px;
-            border-radius: 4px;
-        }
-        
-        .evidence-checkbox {
-            position: absolute;
-            left: 0;
-            top: 8px;
-            width: 20px;
-            height: 20px;
-            cursor: pointer;
-            accent-color: var(--accent-blue);
-        }
-        
-        .evidence-list li.checked {
-            text-decoration: line-through;
-            opacity: 0.7;
-        }
-        
-        .status-box {
-            margin-top: 15px;
-            padding: 15px;
-            background: var(--bg-primary);
-            border: 1px solid var(--border-color);
-            border-radius: 5px;
-        }
-        
-        .status-options {
-            display: flex;
-            gap: 15px;
-            margin-bottom: 15px;
-            flex-wrap: wrap;
-        }
-        
-        .status-options label {
-            display: flex;
-            align-items: center;
-            gap: 5px;
-            font-size: 14px;
-            cursor: pointer;
-        }
-        
-        .status-options input[type="radio"] {
-            width: 18px;
-            height: 18px;
-            cursor: pointer;
-        }
-        
-        .comment-box {
-            width: 100%;
-            padding: 10px;
-            border: 1px solid var(--border-color);
-            border-radius: 5px;
-            font-family: inherit;
-            font-size: 13px;
-            resize: vertical;
-            min-height: 60px;
-            background: var(--bg-primary);
-            color: var(--text-primary);
-        }
-        
-        .comment-label {
-            display: block;
-            margin-bottom: 5px;
-            font-size: 13px;
-            font-weight: bold;
-        }
-        
-        .action-box {
-            margin-top: 15px;
-            padding: 15px;
-            background: #fff8e1;
-            border-left: 4px solid #ffa726;
-            border-radius: 5px;
-        }
-        
-        .action-label {
-            display: block;
-            margin-bottom: 5px;
-            font-size: 13px;
-            font-weight: bold;
-            color: #f57c00;
-        }
-        
-        .action-textarea {
-            width: 100%;
-            padding: 10px;
-            border: 1px solid #ffb74d;
-            border-radius: 5px;
-            font-family: inherit;
-            font-size: 13px;
-            resize: vertical;
-            min-height: 60px;
-            background: #ffffff;
-            color: var(--text-primary);
-        }
-        
-        .action-textarea:focus {
-            outline: none;
-            border-color: #ff9800;
-            box-shadow: 0 0 0 2px rgba(255, 152, 0, 0.1);
-        }
-        
-        [data-theme="dark"] .action-box {
-            background: #3a2a1a;
-        }
-        
-        [data-theme="dark"] .action-textarea {
-            background: #2d2d2d;
-            border-color: #d97400;
-        }
-        
-        .chart-container {
-            margin: 30px 0;
-            padding: 20px;
-            background: var(--bg-primary);
-            border-radius: 10px;
-            box-shadow: 0 2px 10px var(--shadow);
-        }
-        
-        .chart-wrapper {
-            position: relative;
-            height: 300px;
-        }
-        
-        .toast {
-            position: fixed;
-            bottom: 30px;
-            right: 30px;
-            background: #27ae60;
-            color: white;
-            padding: 15px 25px;
-            border-radius: 8px;
-            box-shadow: 0 4px 15px var(--shadow);
-            z-index: 10000;
-            animation: slideIn 0.3s ease;
+
+        /* Pages */
+        .page {
             display: none;
         }
-        
-        .toast.show { display: block; }
-        .toast.error { background: #e74c3c; }
-        
-        @keyframes slideIn {
-            from { transform: translateX(400px); opacity: 0; }
-            to { transform: translateX(0); opacity: 1; }
+
+        .page.active {
+            display: block;
         }
-        
+
+        /* Page Historique */
+        .history-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .history-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        .history-stat-card {
+            background: var(--bg-checkpoint);
+            padding: 20px;
+            border-radius: 8px;
+            border-left: 4px solid var(--accent-blue);
+        }
+
+        .history-stat-card h4 {
+            font-size: 12px;
+            color: var(--text-light);
+            text-transform: uppercase;
+            margin-bottom: 10px;
+        }
+
+        .history-stat-card .value {
+            font-size: 28px;
+            font-weight: bold;
+            color: var(--accent-blue);
+        }
+
+        .search-filter-bar {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .search-input {
+            flex: 1;
+            min-width: 250px;
+            padding: 10px;
+            border: 2px solid var(--border-color);
+            border-radius: 5px;
+            font-size: 14px;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+        }
+
+        .filter-select {
+            padding: 10px;
+            border: 2px solid var(--border-color);
+            border-radius: 5px;
+            font-size: 14px;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            cursor: pointer;
+        }
+
+        .audits-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            background: var(--bg-primary);
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 10px var(--shadow);
+        }
+
+        .audits-table thead {
+            background: var(--bg-header);
+            color: white;
+        }
+
+        .audits-table th,
+        .audits-table td {
+            padding: 15px;
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .audits-table th {
+            font-weight: 600;
+            font-size: 13px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .audits-table tbody tr {
+            transition: background 0.2s;
+            cursor: pointer;
+        }
+
+        .audits-table tbody tr:hover {
+            background: var(--bg-info);
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .status-badge.draft {
+            background: #95a5a6;
+            color: white;
+        }
+
+        .status-badge.in-progress {
+            background: #3498db;
+            color: white;
+        }
+
+        .status-badge.completed {
+            background: #27ae60;
+            color: white;
+        }
+
+        .status-badge.validated {
+            background: #8e44ad;
+            color: white;
+        }
+
+        .progress-mini {
+            display: inline-block;
+            width: 60px;
+            height: 6px;
+            background: var(--bg-info);
+            border-radius: 3px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .progress-mini-bar {
+            height: 100%;
+            background: var(--accent-blue);
+            transition: width 0.3s;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 5px;
+        }
+
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 10000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal.show {
+            display: flex;
+        }
+
+        .modal-content {
+            background: var(--bg-primary);
+            padding: 30px;
+            border-radius: 10px;
+            max-width: 600px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid var(--border-color);
+        }
+
+        .modal-header h2 {
+            margin: 0;
+            color: var(--text-primary);
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: var(--text-light);
+            padding: 0;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            transition: all 0.2s;
+        }
+
+        .modal-close:hover {
+            background: var(--bg-info);
+            color: var(--text-primary);
+        }
+
+        .modal-body {
+            margin-bottom: 20px;
+        }
+
+        .modal-footer {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            padding-top: 15px;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid var(--border-color);
+            border-radius: 5px;
+            font-size: 14px;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            font-family: inherit;
+        }
+
+        .form-group textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        /* Loading spinner */
+        .loading-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.7);
+            z-index: 9999;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .loading-overlay.show {
+            display: flex;
+        }
+
+        .spinner {
+            border: 4px solid rgba(255,255,255,0.3);
+            border-top: 4px solid white;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .loading-text {
+            color: white;
+            margin-top: 20px;
+            font-size: 16px;
+        }
+
+        /* Toast */
+        .toast {
+            position: fixed;
+            bottom: -100px;
+            right: 20px;
+            background: var(--accent-green);
+            color: white;
+            padding: 15px 25px;
+            border-radius: 5px;
+            box-shadow: 0 4px 15px var(--shadow);
+            transition: bottom 0.3s;
+            z-index: 10000;
+        }
+
+        .toast.show { bottom: 20px; }
+        .toast.error { background: var(--non-conforme); }
+        .toast.info { background: var(--accent-blue); }
+
+        /* Empty state */
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: var(--text-light);
+        }
+
+        .empty-state-icon {
+            font-size: 64px;
+            margin-bottom: 20px;
+            opacity: 0.5;
+        }
+
+        .empty-state h3 {
+            font-size: 24px;
+            margin-bottom: 10px;
+            color: var(--text-primary);
+        }
+
+        .empty-state p {
+            font-size: 16px;
+            margin-bottom: 30px;
+        }
+
+        /* Responsive */
         @media (max-width: 768px) {
-            .sidebar { transform: translateX(-280px); }
-            .sidebar.active { transform: translateX(0); }
-            .main-content { margin-left: 0; }
+            .sidebar {
+                transform: translateX(-280px);
+            }
+
+            .main-content {
+                margin-left: 0;
+            }
+
+            .audits-table {
+                font-size: 12px;
+            }
+
+            .audits-table th,
+            .audits-table td {
+                padding: 10px 5px;
+            }
+
+            .action-buttons {
+                flex-direction: column;
+            }
+        }
+
+        /* Stats cards pour audit page */
+        .dashboard {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin: 30px 0;
+        }
+
+        .stat-card {
+            background: var(--bg-checkpoint);
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px var(--shadow);
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 20px var(--shadow);
+        }
+
+        .stat-card h3 {
+            font-size: 14px;
+            color: var(--text-light);
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .stat-value {
+            font-size: 36px;
+            font-weight: bold;
+            color: var(--accent-blue);
+            margin: 10px 0;
+        }
+
+        .stat-label {
+            font-size: 12px;
+            color: var(--text-secondary);
         }
     </style>
 </head>
 <body>
-    <div id="toast" class="toast"></div>
-    
-    <nav class="sidebar" id="sidebar">
-                    <div class="sidebar-header">
-            <h2>Navigation</h2>
-            <div class="progress-circle">
-                <svg width="80" height="80">
-                    <circle cx="40" cy="40" r="35" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="6"/>
-                    <circle id="progressCircle" cx="40" cy="40" r="35" fill="none" stroke="#3498db" stroke-width="6" stroke-dasharray="220" stroke-dashoffset="220"/>
-                </svg>
-                <div class="progress-text" id="progressText">0%</div>
-            </div>
-        </div>
-        
-        <div class="nav-section">
-            <h3>GOUVERNANCE</h3>
-            <a href="#gouvernance" class="nav-link">
-                <span>Gestion des risques</span>
-                <div class="nav-stats"><span id="stat-gou">0/1</span></div>
-            </a>
-        </div>
-        
-        <div class="nav-section">
-            <h3>RESSOURCES</h3>
-            <a href="#ressources" class="nav-link">
-                <span>Cartographie & Réseau</span>
-                <div class="nav-stats"><span id="stat-res">0/9</span></div>
-            </a>
-        </div>
-        
-        <div class="nav-section">
-            <h3>CONTRÔLE D'ACCÈS</h3>
-            <a href="#acces" class="nav-link">
-                <span>Gestion des comptes</span>
-                <div class="nav-stats"><span id="stat-acc">0/9</span></div>
-            </a>
-        </div>
-        
-        <div class="nav-section">
-            <h3>ACTIFS</h3>
-            <a href="#actifs" class="nav-link">
-                <span>Sécurité des systèmes</span>
-                <div class="nav-stats"><span id="stat-act">0/6</span></div>
-            </a>
-        </div>
-        
-        <div class="nav-section">
-            <h3>PHYSIQUE</h3>
-            <a href="#physique" class="nav-link">
-                <span>Contrôles physiques</span>
-                <div class="nav-stats"><span id="stat-phy">0/2</span></div>
-            </a>
-        </div>
-    </nav>
-    
-    <div class="main-content" id="mainContent">
-        <div class="container">
-            <div class="top-bar no-print">
-                <div style="display: flex; align-items: center; gap: 15px;">
-                    <button class="toggle-sidebar" onclick="toggleSidebar()">☰</button>
-                    <h3 style="margin: 0;">Guide d'Audit Cybersécurité</h3>
-                </div>
-                <div class="controls">
-                    <button class="lang-toggle" id="langBtn" onclick="toggleLanguage()" title="Change language">FR</button>
-                    <button class="theme-toggle" onclick="toggleTheme()" title="Changer le thème">Mode sombre/clair</button>
-                    <button class="btn btn-secondary" onclick="saveProgress()">Sauvegarder</button>
-                    <button class="btn btn-secondary" onclick="loadProgress()">Charger</button>
-                    <button class="btn btn-success" onclick="exportJSON()">Export JSON</button>
-                    <button class="btn btn-primary" onclick="window.print()">Imprimer</button>
-                </div>
-            </div>
-            
-            <div class="no-print">
-                <div class="progress-bar-container">
-                    <div class="progress-bar-fill" id="progressBar"></div>
-                </div>
-                <div class="progress-label" id="progressLabel">0 sur 27 points complétés (0%)</div>
-            </div>
-            
-            <div class="dashboard no-print">
-                <div class="stat-card green">
-                    <div class="stat-label">Conformes</div>
-                    <div class="stat-number" id="conformeCount">0</div>
-                </div>
-                <div class="stat-card red">
-                    <div class="stat-label">Non conformes</div>
-                    <div class="stat-number" id="nonConformeCount">0</div>
-                </div>
-                <div class="stat-card orange">
-                    <div class="stat-label">Partiels</div>
-                    <div class="stat-number" id="partielCount">0</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-label">Non vérifiés</div>
-                    <div class="stat-number" id="naCount">27</div>
-                </div>
-            </div>
-            
-            <div class="search-container no-print">
-                <input type="text" class="search-bar" id="searchBar" placeholder="Rechercher un point de contrôle..." onkeyup="searchCheckpoints()">
-                <div class="filter-buttons">
-                    <button class="filter-btn active" onclick="filterByStatus('all')">Tous</button>
-                    <button class="filter-btn" onclick="filterByStatus('conforme')">Conformes</button>
-                    <button class="filter-btn" onclick="filterByStatus('non-conforme')">Non conformes</button>
-                    <button class="filter-btn" onclick="filterByStatus('partiel')">Partiels</button>
-                    <button class="filter-btn" onclick="filterByStatus('na')">Non vérifiés</button>
-                </div>
-            </div>
-            
-            <div class="header">
-                <h1>Guide d'Audit Cybersécurité</h1>
-                <div class="subtitle">Points de Contrôle - Système d'Information Industriel</div>
-            </div>
-            
-            <div class="info-section">
-                <div class="info-field">
-                    <label>Site audité :</label>
-                    <input type="text" id="site" placeholder="Nom du site" onchange="saveToStorage()">
-                </div>
-                <div class="info-field">
-                    <label>Date d'audit :</label>
-                    <input type="date" id="auditDate" onchange="saveToStorage()">
-                </div>
-                <div class="info-field">
-                    <label>Auditeur :</label>
-                    <input type="text" id="auditor" placeholder="Nom de l'auditeur" onchange="saveToStorage()">
-                </div>
-                <div class="info-field">
-                    <label>Responsable site :</label>
-                    <input type="text" id="responsible" placeholder="Nom du responsable" onchange="saveToStorage()">
-                </div>
-            </div>
-
-            <div class="chart-container no-print">
-                <h3>📊 Répartition par statut</h3>
-                <div class="chart-wrapper">
-                    <canvas id="statusChart"></canvas>
-                </div>
-            </div>
-
-            <div id="checkpointsContainer"></div>
+    <div class="loading-overlay" id="loadingOverlay">
+        <div style="text-align: center;">
+            <div class="spinner"></div>
+            <div class="loading-text">Chargement en cours...</div>
         </div>
     </div>
 
+    <!-- Sidebar -->
+    <div class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <h2>Audit Cybersécurité</h2>
+        </div>
+
+        <div class="nav-section">
+            <h3>Navigation</h3>
+            <a class="nav-link active" onclick="showPage('audit')">Nouvel Audit</a>
+            <a class="nav-link" onclick="showPage('history')">Historique</a>
+            <a class="nav-link" onclick="showPage('compare')">Comparaison</a>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content" id="mainContent">
+        <!-- Page: Nouvel Audit -->
+        <div id="auditPage" class="page active">
+            <div class="container">
+                <div class="top-bar no-print">
+                    <div class="controls">
+                        <button class="toggle-sidebar" onclick="toggleSidebar()">☰</button>
+                        <button class="theme-toggle" id="themeToggle" onclick="toggleTheme()">🌙</button>
+                        <button class="theme-toggle" id="langToggle" onclick="toggleLanguage()">🇫🇷</button>
+                    </div>
+                    <div class="controls">
+                        <button class="btn btn-primary" onclick="saveAuditToHistory()">Sauvegarder l'audit</button>
+                        <button class="btn btn-success" onclick="exportJSON()">Export JSON</button>
+                        <button class="btn btn-success" onclick="exportExcel()">Export Excel</button>
+                        <button class="btn btn-danger" onclick="exportPDF()">Export PDF</button>
+                    </div>
+                </div>
+
+                <div style="background: linear-gradient(135deg, var(--bg-header), var(--accent-blue)); color: white; padding: 30px; border-radius: 10px; margin-bottom: 30px;">
+                    <h1 style="margin: 0 0 20px 0;">Audit de Cybersécurité Industriel</h1>
+                    <div class="form-group" style="margin-bottom: 15px;">
+                        <label style="color: white; opacity: 0.9;">Nom de l'audit *</label>
+                        <input type="text" id="auditName" placeholder="Ex: Audit Site Paris Q4 2024" style="padding: 12px;">
+                    </div>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px;">
+                        <div class="form-group" style="margin: 0;">
+                            <label style="color: white; opacity: 0.9;">Site audité</label>
+                            <input type="text" id="site" placeholder="Nom du site">
+                        </div>
+                        <div class="form-group" style="margin: 0;">
+                            <label style="color: white; opacity: 0.9;">Date d'audit</label>
+                            <input type="date" id="auditDate">
+                        </div>
+                        <div class="form-group" style="margin: 0;">
+                            <label style="color: white; opacity: 0.9;">Auditeur</label>
+                            <input type="text" id="auditor" placeholder="Nom de l'auditeur">
+                        </div>
+                        <div class="form-group" style="margin: 0;">
+                            <label style="color: white; opacity: 0.9;">Responsable sécurité</label>
+                            <input type="text" id="responsible" placeholder="Nom du responsable">
+                        </div>
+                    </div>
+                    <div class="form-group" style="margin-top: 15px; margin-bottom: 0;">
+                        <label style="color: white; opacity: 0.9;">Statut de l'audit</label>
+                        <select id="auditStatus" style="padding: 12px;">
+                            <option value="draft">Brouillon</option>
+                            <option value="in-progress">En cours</option>
+                            <option value="completed">Terminé</option>
+                            <option value="validated">Validé</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="dashboard">
+                    <div class="stat-card">
+                        <h3>Progression globale</h3>
+                        <div class="stat-value" id="globalProgress">0%</div>
+                        <div class="stat-label"><span id="completedCount">0</span> sur 27 checkpoints</div>
+                    </div>
+                    <div class="stat-card" style="border-left: 4px solid var(--conforme);">
+                        <h3>Conformes</h3>
+                        <div class="stat-value" style="color: var(--conforme);" id="conformeCount">0</div>
+                        <div class="stat-label" id="conformePercent">0%</div>
+                    </div>
+                    <div class="stat-card" style="border-left: 4px solid var(--non-conforme);">
+                        <h3>Non conformes</h3>
+                        <div class="stat-value" style="color: var(--non-conforme);" id="nonConformeCount">0</div>
+                        <div class="stat-label" id="nonConformePercent">0%</div>
+                    </div>
+                    <div class="stat-card" style="border-left: 4px solid var(--partiel);">
+                        <h3>Partiels</h3>
+                        <div class="stat-value" style="color: var(--partiel);" id="partielCount">0</div>
+                        <div class="stat-label" id="partielPercent">0%</div>
+                    </div>
+                </div>
+
+                <div id="checkpointsContainer"></div>
+            </div>
+        </div>
+
+        <!-- Page: Historique -->
+        <div id="historyPage" class="page">
+            <div class="container">
+                <div class="history-header">
+                    <div>
+                        <h1>Historique des Audits</h1>
+                        <p style="color: var(--text-light); margin-top: 5px;">Gérez tous vos audits sauvegardés</p>
+                    </div>
+                    <div class="controls">
+                        <button class="btn btn-primary" onclick="showPage('audit'); resetAuditForm();">Nouvel Audit</button>
+                        <button class="btn btn-success" onclick="exportAllAuditsJSON()">Exporter Tout (JSON)</button>
+                        <button class="btn btn-secondary" onclick="importAuditsJSON()">Importer</button>
+                    </div>
+                </div>
+
+                <div class="history-stats" id="historyStats">
+                    <!-- Stats dynamiques -->
+                </div>
+
+                <div class="search-filter-bar">
+                    <input type="text" class="search-input" id="historySearch" placeholder="Rechercher par nom, site..." oninput="filterAudits()">
+                    <select class="filter-select" id="statusFilter" onchange="filterAudits()">
+                        <option value="all">Tous les statuts</option>
+                        <option value="draft">Brouillon</option>
+                        <option value="in-progress">En cours</option>
+                        <option value="completed">Terminé</option>
+                        <option value="validated">Validé</option>
+                    </select>
+                    <select class="filter-select" id="sortFilter" onchange="filterAudits()">
+                        <option value="date-desc">Plus récent</option>
+                        <option value="date-asc">Plus ancien</option>
+                        <option value="name-asc">Nom (A-Z)</option>
+                        <option value="name-desc">Nom (Z-A)</option>
+                        <option value="progress-desc">Progression (desc)</option>
+                        <option value="progress-asc">Progression (asc)</option>
+                    </select>
+                </div>
+
+                <div id="auditsTableContainer">
+                    <!-- Table dynamique -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Page: Comparaison -->
+        <div id="comparePage" class="page">
+            <div class="container">
+                <h1>Comparaison d'Audits</h1>
+                <p style="color: var(--text-light); margin: 10px 0 30px 0;">Comparez deux audits côte à côte</p>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 30px;">
+                    <div class="form-group">
+                        <label>Audit 1</label>
+                        <select id="compareAudit1" class="filter-select">
+                            <option value="">Sélectionner un audit...</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Audit 2</label>
+                        <select id="compareAudit2" class="filter-select">
+                            <option value="">Sélectionner un audit...</option>
+                        </select>
+                    </div>
+                </div>
+
+                <button class="btn btn-primary" onclick="performComparison()">Comparer</button>
+
+                <div id="comparisonResults" style="margin-top: 30px;">
+                    <!-- Résultats de la comparaison -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de confirmation de suppression -->
+    <div class="modal" id="deleteModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Confirmer la suppression</h2>
+                <button class="modal-close" onclick="closeModal('deleteModal')">×</button>
+            </div>
+            <div class="modal-body">
+                <p>Êtes-vous sûr de vouloir supprimer cet audit ?</p>
+                <p style="color: var(--text-light); margin-top: 10px;">Cette action est irréversible.</p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeModal('deleteModal')">Annuler</button>
+                <button class="btn btn-danger" onclick="confirmDelete()">Supprimer</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="toast" id="toast"></div>
+
+    <input type="file" id="importFileInput" accept=".json" style="display: none;" onchange="handleImportFile(event)">
+
     <script>
-        // Traductions
-        const translations = {
-            fr: {
-                // Navigation
-                navigation: "Navigation",
-                governance: "GOUVERNANCE",
-                resources: "RESSOURCES",
-                access: "CONTRÔLE D'ACCÈS",
-                assets: "ACTIFS",
-                physical: "PHYSIQUE",
-                
-                // Top bar
-                title: "Guide d'Audit Cybersécurité",
-                darkMode: "Mode sombre/clair",
-                save: "Sauvegarder",
-                load: "Charger",
-                exportJson: "Export JSON",
-                print: "Imprimer",
-                
-                // Dashboard
-                compliant: "Conformes",
-                nonCompliant: "Non conformes",
-                partial: "Partiels",
-                notVerified: "Non vérifiés",
-                pointsCompleted: "points complétés",
-                on: "sur",
-                
-                // Search & Filters
-                searchPlaceholder: "Rechercher un point de contrôle...",
-                all: "Tous",
-                compliantFilter: "Conformes",
-                nonCompliantFilter: "Non conformes",
-                partialFilter: "Partiels",
-                notVerifiedFilter: "Non vérifiés",
-                
-                // Form
-                subtitle: "Points de Contrôle - Système d'Information Industriel",
-                auditedSite: "Site audité :",
-                auditDate: "Date d'audit :",
-                auditor: "Auditeur :",
-                siteManager: "Responsable site :",
-                sitePlaceholder: "Nom du site",
-                auditorPlaceholder: "Nom de l'auditeur",
-                managerPlaceholder: "Nom du responsable",
-                
-                // Checkpoint
-                evidenceTitle: "Preuves à collecter :",
-                statusCompliant: "Conforme",
-                statusNonCompliant: "Non conforme",
-                statusPartial: "Partiel",
-                statusNA: "N/A",
-                comments: "Commentaires :",
-                commentsPlaceholder: "Observations et détails constatés lors de l'audit...",
-                actions: "Actions de remédiation :",
-                actionsPlaceholder: "Actions correctives recommandées, priorité, responsable, délai...",
-                
-                // Chart
-                chartTitle: "Répartition par statut",
-                
-                // Toast messages
-                themeDark: "Thème sombre activé",
-                themeLight: "Thème clair activé",
-                saved: "Progression sauvegardée !",
-                loaded: "Données chargées automatiquement",
-                exported: "Export JSON réussi !",
-                noData: "Aucune donnée à exporter"
-            },
-            en: {
-                // Navigation
-                navigation: "Navigation",
-                governance: "GOVERNANCE",
-                resources: "RESOURCES",
-                access: "ACCESS CONTROL",
-                assets: "ASSETS",
-                physical: "PHYSICAL",
-                
-                // Top bar
-                title: "Cybersecurity Audit Guide",
-                darkMode: "Dark/Light Mode",
-                save: "Save",
-                load: "Load",
-                exportJson: "Export JSON",
-                print: "Print",
-                
-                // Dashboard
-                compliant: "Compliant",
-                nonCompliant: "Non-compliant",
-                partial: "Partial",
-                notVerified: "Not verified",
-                pointsCompleted: "checkpoints completed",
-                on: "of",
-                
-                // Search & Filters
-                searchPlaceholder: "Search for a checkpoint...",
-                all: "All",
-                compliantFilter: "Compliant",
-                nonCompliantFilter: "Non-compliant",
-                partialFilter: "Partial",
-                notVerifiedFilter: "Not verified",
-                
-                // Form
-                subtitle: "Control Points - Industrial Information System",
-                auditedSite: "Audited site:",
-                auditDate: "Audit date:",
-                auditor: "Auditor:",
-                siteManager: "Site manager:",
-                sitePlaceholder: "Site name",
-                auditorPlaceholder: "Auditor name",
-                managerPlaceholder: "Manager name",
-                
-                // Checkpoint
-                evidenceTitle: "Evidence to collect:",
-                statusCompliant: "Compliant",
-                statusNonCompliant: "Non-compliant",
-                statusPartial: "Partial",
-                statusNA: "N/A",
-                comments: "Comments:",
-                commentsPlaceholder: "Observations and details noted during the audit...",
-                actions: "Remediation actions:",
-                actionsPlaceholder: "Recommended corrective actions, priority, responsible, deadline...",
-                
-                // Chart
-                chartTitle: "Status Distribution",
-                
-                // Toast messages
-                themeDark: "Dark theme enabled",
-                themeLight: "Light theme enabled",
-                saved: "Progress saved!",
-                loaded: "Data loaded automatically",
-                exported: "JSON export successful!",
-                noData: "No data to export"
-            }
-        };
+        // ===== INDEXEDDB SETUP =====
+        let db;
+        const DB_NAME = 'CyberAuditDB';
+        const DB_VERSION = 1;
+        const STORE_NAME = 'audits';
 
-        let currentLang = localStorage.getItem('language') || 'fr';
+        // Initialiser IndexedDB
+        function initDB() {
+            return new Promise((resolve, reject) => {
+                const request = indexedDB.open(DB_NAME, DB_VERSION);
 
-        // Fonction pour traduire
-        function t(key) {
-            return translations[currentLang][key] || key;
+                request.onerror = () => reject(request.error);
+                request.onsuccess = () => {
+                    db = request.result;
+                    resolve(db);
+                };
+
+                request.onupgradeneeded = (event) => {
+                    const db = event.target.result;
+
+                    if (!db.objectStoreNames.contains(STORE_NAME)) {
+                        const objectStore = db.createObjectStore(STORE_NAME, { keyPath: 'id', autoIncrement: true });
+                        objectStore.createIndex('name', 'name', { unique: false });
+                        objectStore.createIndex('site', 'site', { unique: false });
+                        objectStore.createIndex('date', 'auditDate', { unique: false });
+                        objectStore.createIndex('createdAt', 'createdAt', { unique: false });
+                        objectStore.createIndex('updatedAt', 'updatedAt', { unique: false });
+                        objectStore.createIndex('status', 'status', { unique: false });
+                    }
+                };
+            });
         }
 
-        // Changer de langue
-        function toggleLanguage() {
-            currentLang = currentLang === 'fr' ? 'en' : 'fr';
-            localStorage.setItem('language', currentLang);
-            
-            // Régénérer les checkpoints avec la nouvelle langue
-            generateCheckpoints();
-            
-            // Restaurer les données
-            loadFromStorage();
-            
-            // Mettre à jour l'interface
-            updateLanguage();
-            
-            showToast(currentLang === 'fr' ? 'Langue: Français' : 'Language: English');
+        // Sauvegarder un audit
+        async function saveAuditToDB(auditData) {
+            return new Promise((resolve, reject) => {
+                const transaction = db.transaction([STORE_NAME], 'readwrite');
+                const objectStore = transaction.objectStore(STORE_NAME);
+
+                const request = auditData.id ?
+                    objectStore.put(auditData) :
+                    objectStore.add(auditData);
+
+                request.onsuccess = () => resolve(request.result);
+                request.onerror = () => reject(request.error);
+            });
         }
 
-        // Mettre à jour l'interface avec la langue
-        function updateLanguage() {
-            // Bouton de langue
-            const langBtn = document.getElementById('langBtn');
-            if (langBtn) langBtn.textContent = currentLang === 'fr' ? 'EN' : 'FR';
-            
-            // Sidebar
-            const sidebarTitle = document.querySelector('.sidebar-header h2');
-            if (sidebarTitle) sidebarTitle.textContent = t('navigation');
-            
-            const navSections = document.querySelectorAll('.nav-section h3');
-            if (navSections.length >= 5) {
-                navSections[0].textContent = t('governance');
-                navSections[1].textContent = t('resources');
-                navSections[2].textContent = t('access');
-                navSections[3].textContent = t('assets');
-                navSections[4].textContent = t('physical');
-            }
-            
-            // Top bar
-            const topBarTitle = document.querySelector('.top-bar h3');
-            if (topBarTitle) topBarTitle.textContent = t('title');
-            
-            const themeToggle = document.querySelector('.theme-toggle');
-            if (themeToggle) themeToggle.textContent = t('darkMode');
-            
-            const buttons = document.querySelectorAll('.btn-secondary');
-            if (buttons.length >= 2) {
-                buttons[0].textContent = t('save');
-                buttons[1].textContent = t('load');
-            }
-            
-            const successBtn = document.querySelector('.btn-success');
-            if (successBtn) successBtn.textContent = t('exportJson');
-            
-            const printBtn = document.querySelectorAll('.btn-primary')[1];
-            if (printBtn) printBtn.textContent = t('print');
-            
-            // Dashboard cards
-            const statCards = document.querySelectorAll('.stat-label');
-            if (statCards.length >= 4) {
-                statCards[0].textContent = t('compliant');
-                statCards[1].textContent = t('nonCompliant');
-                statCards[2].textContent = t('partial');
-                statCards[3].textContent = t('notVerified');
-            }
-            
-            // Search
-            const searchBar = document.getElementById('searchBar');
-            if (searchBar) searchBar.placeholder = t('searchPlaceholder');
-            
-            const filterBtns = document.querySelectorAll('.filter-btn');
-            if (filterBtns.length >= 5) {
-                filterBtns[0].textContent = t('all');
-                filterBtns[1].textContent = t('compliantFilter');
-                filterBtns[2].textContent = t('nonCompliantFilter');
-                filterBtns[3].textContent = t('partialFilter');
-                filterBtns[4].textContent = t('notVerifiedFilter');
-            }
-            
-            // Header
-            const headerTitle = document.querySelector('.header h1');
-            if (headerTitle) headerTitle.textContent = t('title');
-            
-            const subtitle = document.querySelector('.subtitle');
-            if (subtitle) subtitle.textContent = t('subtitle');
-            
-            // Info section
-            const infoLabels = document.querySelectorAll('.info-field label');
-            if (infoLabels.length >= 4) {
-                infoLabels[0].textContent = t('auditedSite');
-                infoLabels[1].textContent = t('auditDate');
-                infoLabels[2].textContent = t('auditor');
-                infoLabels[3].textContent = t('siteManager');
-            }
-            
-            const siteInput = document.getElementById('site');
-            if (siteInput) siteInput.placeholder = t('sitePlaceholder');
-            
-            const auditorInput = document.getElementById('auditor');
-            if (auditorInput) auditorInput.placeholder = t('auditorPlaceholder');
-            
-            const responsibleInput = document.getElementById('responsible');
-            if (responsibleInput) responsibleInput.placeholder = t('managerPlaceholder');
-            
-            // Chart title
-            const chartTitle = document.querySelector('.chart-container h3');
-            if (chartTitle) chartTitle.textContent = t('chartTitle');
-            
-            // Update progress label
-            updateAllStats();
+        // Récupérer tous les audits
+        async function getAllAudits() {
+            return new Promise((resolve, reject) => {
+                const transaction = db.transaction([STORE_NAME], 'readonly');
+                const objectStore = transaction.objectStore(STORE_NAME);
+                const request = objectStore.getAll();
+
+                request.onsuccess = () => resolve(request.result);
+                request.onerror = () => reject(request.error);
+            });
         }
 
-        // Configuration des checkpoints
+        // Récupérer un audit par ID
+        async function getAuditById(id) {
+            return new Promise((resolve, reject) => {
+                const transaction = db.transaction([STORE_NAME], 'readonly');
+                const objectStore = transaction.objectStore(STORE_NAME);
+                const request = objectStore.get(id);
+
+                request.onsuccess = () => resolve(request.result);
+                request.onerror = () => reject(request.error);
+            });
+        }
+
+        // Supprimer un audit
+        async function deleteAuditFromDB(id) {
+            return new Promise((resolve, reject) => {
+                const transaction = db.transaction([STORE_NAME], 'readwrite');
+                const objectStore = transaction.objectStore(STORE_NAME);
+                const request = objectStore.delete(id);
+
+                request.onsuccess = () => resolve();
+                request.onerror = () => reject(request.error);
+            });
+        }
+
+        // ===== CHECKPOINTS DATA =====
         const checkpoints = {
             gouvernance: [
-                {
-                    id: 'GOU-01',
-                    title: 'Gestion des risques liés à l\'infogérance et comité de pilotage',
-                    desc: 'Vérifier la formalisation de la gestion des risques et le suivi contractuel',
-                    evidence: ['Contrats et annexes cyber', 'Comptes-rendus de comités', 'Inventaires des sous-traitants']
-                }
+                { id: 'GOU-01', title: 'Pilotage de la cybersécurité', desc: 'Vérifier l\'existence et le suivi d\'une politique de cybersécurité', evidence: ['Contrat de maintenance cybersécurité', 'Compte-rendus de comité de pilotage', 'Plan d\'action de sécurité'] }
             ],
             ressources: [
-                {
-                    id: 'RES-01',
-                    title: 'Identification des informations et serveurs sensibles',
-                    desc: 'Maintien à jour de la cartographie du système d\'information',
-                    evidence: ['Cartographie du SI', 'Inventaire physique', 'Inventaire logique', 'Inventaire des applications', 'Revues des inventaires', 'Capture des applications installées et versions']
-                },
-                {
-                    id: 'RES-02',
-                    title: 'Contrôles d\'accès physique au SI industriel',
-                    desc: 'Sécurisation des accès physiques aux équipements réseau',
-                    evidence: ['Capture de la configuration des routeurs/switch (blocage des ports)', 'Matrice des flux', 'Charte informatique']
-                },
-                {
-                    id: 'RES-03',
-                    title: 'Utilisation des protocoles de chiffrement',
-                    desc: 'Sécurité des portails d\'authentification',
-                    evidence: ['Capture des portails d\'authentifications', 'Vérifier HTTP / HTTPS / VPN']
-                },
-                {
-                    id: 'RES-04',
-                    title: 'Cloisonnement du réseau industriel',
-                    desc: 'Séparation du réseau industriel par rapport aux autres réseaux',
-                    evidence: ['Matrices des flux', 'Configuration des routeurs/switch (VLAN)', 'Configuration des firewalls avec les règles', 'Configuration des autres dispositifs de filtrages']
-                },
-                {
-                    id: 'RES-05',
-                    title: 'Mécanisme de sécurité pour l\'accès WiFi',
-                    desc: 'Configuration et sécurisation des accès sans fil',
-                    evidence: ['Configuration du WiFi', 'Capture de l\'absence de WiFi (avec téléphone)']
-                },
-                {
-                    id: 'RES-06',
-                    title: 'Protocoles réseaux sécurisés utilisés',
-                    desc: 'Vérification de l\'utilisation de protocoles sécurisés',
-                    evidence: ['Matrice des flux', 'Capture des portails']
-                },
-                {
-                    id: 'RES-07',
-                    title: 'Accès sécurisé à internet depuis les sites industriels',
-                    desc: 'Mise en place de mécanismes de filtrage et de protection',
-                    evidence: ['Preuve de filtrage réseau (ex: filtrage YouTube)', 'Capture des configurations firewall, proxy, sonde d\'inspection']
-                },
-                {
-                    id: 'RES-08',
-                    title: 'Cloisonnement des services accessibles depuis internet',
-                    desc: 'Isolation des services exposés vis-à-vis du SI Industriel',
-                    evidence: ['Cartographie', 'Preuve d\'installation d\'un pare-feu au sein du réseau', 'Capture des configurations firewall, proxy, sonde d\'inspection']
-                },
-                {
-                    id: 'RES-09',
-                    title: 'Interconnexions réseaux sécurisées avec les partenaires',
-                    desc: 'Sécurisation des accès externes partenaires',
-                    evidence: ['Cartographie', 'Preuve d\'accès sécurisé (ex: Ewon)', 'Configuration des mécanismes de filtrage', 'Configuration des logs']
-                }
+                { id: 'RES-01', title: 'Cartographie du SI', desc: 'Disposer d\'une cartographie à jour du système d\'information', evidence: ['Schéma réseau', 'Inventaire des équipements', 'Documentation CMDB'] },
+                { id: 'RES-02', title: 'Segmentation réseau', desc: 'Vérifier la séparation des réseaux IT/OT', evidence: ['Schéma de segmentation', 'Configuration firewall', 'Règles de filtrage'] },
+                { id: 'RES-03', title: 'Architecture sécurisée', desc: 'Évaluer l\'architecture de sécurité mise en place', evidence: ['Schéma d\'architecture', 'DMZ configurée', 'Zones de sécurité définies'] },
+                { id: 'RES-04', title: 'Supervision réseau', desc: 'Vérifier la présence d\'outils de supervision', evidence: ['Solution SIEM', 'Logs centralisés', 'Alertes configurées'] },
+                { id: 'RES-05', title: 'Sauvegarde', desc: 'Contrôler la stratégie de sauvegarde', evidence: ['Plan de sauvegarde', 'Tests de restauration', 'Sauvegardes externalisées'] },
+                { id: 'RES-06', title: 'Plan de continuité', desc: 'Vérifier l\'existence d\'un PCA/PRA', evidence: ['Document PCA', 'Document PRA', 'Tests annuels'] },
+                { id: 'RES-07', title: 'Gestion des vulnérabilités', desc: 'Contrôler le processus de gestion des vulnérabilités', evidence: ['Scan de vulnérabilités', 'Plan de remédiation', 'Suivi des correctifs'] },
+                { id: 'RES-08', title: 'Antivirus / EDR', desc: 'Vérifier le déploiement et la mise à jour des solutions antivirales', evidence: ['Console antivirus', 'Taux de couverture', 'Mises à jour automatiques'] },
+                { id: 'RES-09', title: 'Pare-feu', desc: 'Contrôler la configuration et la gestion des pare-feu', evidence: ['Règles de filtrage', 'Logs firewall', 'Revue annuelle des règles'] }
             ],
-            acces: [
-                {
-                    id: 'ACC-01',
-                    title: 'Inventaire des comptes privilégiés',
-                    desc: 'Mise à jour et sécurité des comptes à privilèges',
-                    evidence: ['Inventaire des profils', 'Revue des habilitations', 'Capture d\'écran des comptes déclarés et comparaison avec inventaire']
-                },
-                {
-                    id: 'ACC-02',
-                    title: 'Procédure d\'arrivée et départ',
-                    desc: 'Gestion des accès lors des changements de fonction',
-                    evidence: ['Procédures d\'entrée/sortie', 'Procédure de gestion des accès des sous-traitants', 'Revue des habilitations']
-                },
-                {
-                    id: 'ACC-03',
-                    title: 'Identification des utilisateurs et administrateurs',
-                    desc: 'Distinction des rôles utilisateurs et administrateurs',
-                    evidence: ['Définition des profils nominatifs et habilitations associées', 'Habilitations sur les systèmes et les applications']
-                },
-                {
-                    id: 'ACC-04',
-                    title: 'Attribution des droits sur les ressources sensibles',
-                    desc: 'Mise à jour et sécurité des droits d\'accès',
-                    evidence: ['Inventaire des données sensibles (données, fichiers de conf, programmes)', 'Droits d\'accès à ces données et revue', 'Logs de connexion aux ressources sensibles', 'Liste des comptes à privilège']
-                },
-                {
-                    id: 'ACC-05',
-                    title: 'Définition et vérification des règles de complexité des mots de passe',
-                    desc: 'Politique de mot de passe conforme',
-                    evidence: ['Connaissance de la politique de sécurité industrielle et de la PSSI', 'Capture de la configuration des contraintes de mots de passe', 'Vérification de l\'unicité des mots de passe']
-                },
-                {
-                    id: 'ACC-06',
-                    title: 'Stockage des mots de passe',
-                    desc: 'Utilisation de coffre-fort de mots de passe (KeePass)',
-                    evidence: ['Capture d\'écran du fichier kdbx (KeePass)', 'Capture du contenu de la base de données', 'Capture de la configuration (fenêtre de login)', 'Si fichier, vérification des droits d\'accès']
-                },
-                {
-                    id: 'ACC-07',
-                    title: 'Changement des éléments d\'authentification par défaut',
-                    desc: 'Modification des mots de passe par défaut sur les équipements et services',
-                    evidence: ['Preuve de changement des mots de passe par défaut']
-                },
-                {
-                    id: 'ACC-08',
-                    title: 'Attribution des droits d\'administration',
-                    desc: 'Droits d\'administration sur les postes de travail et surveillance',
-                    evidence: ['Journaux de connexion des administrateurs', 'Matrice des profils']
-                },
-                {
-                    id: 'ACC-09',
-                    title: 'Activation, configuration et surveillance des composants critiques',
-                    desc: 'Logs et événements sur le SI industriel',
-                    evidence: ['Capture de logs suite à une action d\'administration', 'Événements système']
-                }
+            controle: [
+                { id: 'ACC-01', title: 'Gestion des comptes', desc: 'Vérifier la gestion du cycle de vie des comptes utilisateurs', evidence: ['Procédure de création/suppression', 'Revue des comptes', 'Comptes orphelins'] },
+                { id: 'ACC-02', title: 'Authentification forte', desc: 'Contrôler la mise en place de l\'authentification multifacteur', evidence: ['MFA activé', 'Taux d\'adoption', 'Solutions déployées'] },
+                { id: 'ACC-03', title: 'Politique de mots de passe', desc: 'Évaluer la robustesse de la politique de mots de passe', evidence: ['Politique écrite', 'Complexité requise', 'Durée de validité'] },
+                { id: 'ACC-04', title: 'Gestion des privilèges', desc: 'Contrôler la gestion des comptes à privilèges', evidence: ['Liste des comptes admin', 'Traçabilité des actions', 'Revue trimestrielle'] },
+                { id: 'ACC-05', title: 'Gestion des accès distants', desc: 'Vérifier la sécurisation des accès distants', evidence: ['VPN configuré', 'Chiffrement activé', 'Logs des connexions'] },
+                { id: 'ACC-06', title: 'Gestion des accès tiers', desc: 'Contrôler les accès des prestataires et fournisseurs', evidence: ['Contrats signés', 'Accès temporaires', 'Traçabilité'] },
+                { id: 'ACC-07', title: 'Journalisation', desc: 'Vérifier la mise en place de la journalisation', evidence: ['Logs centralisés', 'Durée de rétention', 'Protection des logs'] },
+                { id: 'ACC-08', title: 'Droits d\'accès', desc: 'Contrôler l\'application du principe du moindre privilège', evidence: ['Matrice des droits', 'Revue semestrielle', 'Séparation des tâches'] },
+                { id: 'ACC-09', title: 'Départ d\'utilisateurs', desc: 'Vérifier le processus de désactivation des comptes', evidence: ['Procédure de départ', 'Délais de désactivation', 'Restitution matériel'] }
             ],
             actifs: [
-                {
-                    id: 'ACT-01',
-                    title: 'Sécurité des postes et systèmes',
-                    desc: 'Configuration sécurisée des postes de travail et serveurs',
-                    evidence: ['Capture de la fenêtre de sécurité Windows', 'Capture d\'écran de l\'antivirus avec date de définition', 'Capture de la version de l\'OS', 'Capture de l\'application des dernières mises à jour de sécurité', 'Capture du chiffrement du disque dur', 'Capture de la configuration de l\'autorun désactivé']
-                },
-                {
-                    id: 'ACT-05',
-                    title: 'Configuration des pare-feu locaux',
-                    desc: 'Pare-feu des postes et serveurs',
-                    evidence: ['Capture de la configuration du pare-feu local']
-                },
-                {
-                    id: 'ACT-06',
-                    title: 'Stratégie de continuité d\'activité',
-                    desc: 'Plan de continuité en cas d\'incident majeur',
-                    evidence: ['Présence d\'un PCA/PRA', 'Présence de fiches réflexes', 'Capture de copie des données sensibles en dehors du site']
-                },
-                {
-                    id: 'ACT-07',
-                    title: 'Politique de mise à jour des composants du SI',
-                    desc: 'Vérification de l\'application des mises à jour',
-                    evidence: ['Politique MCO/MCS', 'Registre de mise à jour (référence équipement, version)']
-                },
-                {
-                    id: 'ACT-08',
-                    title: 'Anticipation de la fin de maintenance',
-                    desc: 'Gestion des logiciels et systèmes obsolètes ou en fin de vie',
-                    evidence: ['Inventaire logiciel avec identification des versions obsolètes ou en fin de vie', 'Politique de MCO/MCS', 'Plan de migration']
-                },
-                {
-                    id: 'ACT-09',
-                    title: 'Politique de sauvegarde des composants critiques',
-                    desc: 'Sauvegarde des GTB, GTC, automates, routeurs',
-                    evidence: ['Sauvegarde sur site et hors site (cloud)', 'Procédure de sauvegarde']
-                }
+                { id: 'ACT-01', title: 'Gestion des correctifs', desc: 'Contrôler la gestion des mises à jour de sécurité', evidence: ['Planning de patching', 'Taux d\'application', 'Tests avant déploiement'] },
+                { id: 'ACT-02', title: 'Sécurité des postes', desc: 'Vérifier la sécurisation des postes de travail', evidence: ['Chiffrement disque', 'Verrouillage automatique', 'Politique BYOD'] },
+                { id: 'ACT-03', title: 'Sécurité des serveurs', desc: 'Contrôler le durcissement des serveurs', evidence: ['Baseline de sécurité', 'Services désactivés', 'Audit de configuration'] },
+                { id: 'ACT-04', title: 'Protection des données', desc: 'Vérifier les mesures de protection des données sensibles', evidence: ['Classification des données', 'Chiffrement', 'DLP activé'] },
+                { id: 'ACT-05', title: 'Gestion du matériel', desc: 'Contrôler le cycle de vie du matériel', evidence: ['Inventaire matériel', 'Procédure de destruction', 'Traçabilité'] },
+                { id: 'ACT-06', title: 'Supports amovibles', desc: 'Vérifier la politique d\'usage des supports amovibles', evidence: ['Politique écrite', 'Contrôle USB', 'Chiffrement requis'] }
             ],
             physique: [
-                {
-                    id: 'PHY-01',
-                    title: 'Limitation d\'usage des supports amovibles',
-                    desc: 'Contrôle et gestion des clés USB et supports externes',
-                    evidence: ['Photo des protections physiques', 'Configuration des fonctionnalités de blocage', 'Photo du coffre fermant à clé contenant les supports', 'Photo des supports marqués avec étiquettes', 'Procédure de gestion des supports amovibles', 'Présence de station blanche', 'Logs de scan des clés USB']
-                },
-                {
-                    id: 'PHY-02',
-                    title: 'Mesures techniques et organisationnelles',
-                    desc: 'Contrôle et sécurisation des accès aux salles serveurs et locaux techniques',
-                    evidence: ['Photos de câble de sécurité', 'Armoire fermant à clé ou non', 'Local sous badge', 'Local fermant à clé (vérifier si généralement fermé)']
-                }
+                { id: 'PHY-01', title: 'Contrôle d\'accès physique', desc: 'Vérifier les dispositifs de contrôle d\'accès aux locaux sensibles', evidence: ['Badges d\'accès', 'Registre des visiteurs', 'Vidéosurveillance'] },
+                { id: 'PHY-02', title: 'Sécurité des salles techniques', desc: 'Contrôler la sécurisation des salles serveurs/techniques', evidence: ['Accès restreint', 'Détection incendie', 'Climatisation'] }
             ]
         };
 
-        const categoryIcons = {
-            gouvernance: '',
-            ressources: '',
-            acces: '',
-            actifs: '',
-            physique: ''
+        const categoryNames = {
+            gouvernance: 'Gouvernance',
+            ressources: 'Ressources',
+            controle: 'Contrôle d\'accès',
+            actifs: 'Actifs',
+            physique: 'Sécurité physique'
         };
 
-        const categoryTitles = {
-            gouvernance: 'GOUVERNANCE',
-            ressources: 'RESSOURCES & CARTOGRAPHIE',
-            acces: 'CONTRÔLE D\'ACCÈS',
-            actifs: 'SÉCURITÉ DES ACTIFS',
-            physique: 'SÉCURITÉ PHYSIQUE'
-        };
+        let currentAuditId = null; // ID de l'audit en cours d'édition
+        let currentLanguage = 'fr';
+        let deleteAuditId = null; // ID de l'audit à supprimer
 
-        let statusChart = null;
+        // ===== INITIALIZATION =====
+        document.addEventListener('DOMContentLoaded', async function() {
+            try {
+                await initDB();
+                renderCheckpoints();
+                loadHistory();
 
-        // Générer les checkpoints dynamiquement
-        function generateCheckpoints() {
+                const today = new Date().toISOString().split('T')[0];
+                document.getElementById('auditDate').value = today;
+            } catch (error) {
+                console.error('Erreur d\'initialisation:', error);
+                showToast('Erreur d\'initialisation de la base de données', true);
+            }
+        });
+
+        // ===== RENDER CHECKPOINTS =====
+        function renderCheckpoints() {
             const container = document.getElementById('checkpointsContainer');
-            let html = '';
-            
-            Object.keys(checkpoints).forEach((category, catIndex) => {
-                const points = checkpoints[category];
-                const icon = categoryIcons[category];
-                const title = categoryTitles[category];
-                
-                html += `
-                    ${catIndex > 0 ? '<div class="page-break"></div>' : ''}
-                    <div class="category" id="${category}">
-                        <div class="category-title">
-                            <span>${icon} ${title}</span>
-                            <span class="category-progress" id="progress-${category}">0/${points.length}</span>
-                        </div>
+            container.innerHTML = '';
+
+            Object.keys(checkpoints).forEach(categoryKey => {
+                const categoryDiv = document.createElement('div');
+                categoryDiv.style.marginBottom = '30px';
+
+                let html = `
+                    <div style="background: var(--bg-category); color: white; padding: 15px 20px; border-radius: 8px 8px 0 0; cursor: pointer;" onclick="toggleCategory('${categoryKey}')">
+                        <span style="font-size: 18px; font-weight: 600;">${categoryNames[categoryKey]}</span>
+                        <span id="category-stats-${categoryKey}" style="float: right;">0/${checkpoints[categoryKey].length}</span>
+                    </div>
                 `;
-                
-                points.forEach(point => {
+
+                checkpoints[categoryKey].forEach(point => {
                     html += `
-                        <div class="checkpoint" data-id="${point.id}" data-category="${category}">
-                            <div class="checkpoint-header">
-                                <div class="checkpoint-id">${point.id} - ${point.title}</div>
-                                <span class="checkpoint-status" style="display:none"></span>
+                        <div style="background: var(--bg-checkpoint); padding: 20px; margin-bottom: 15px; border-radius: 8px; border-left: 4px solid var(--border-color);" data-id="${point.id}">
+                            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 15px;">
+                                <span style="background: var(--accent-blue); color: white; padding: 5px 10px; border-radius: 5px; font-weight: bold; font-size: 12px;">${point.id}</span>
+                                <div style="flex: 1; margin: 0 15px; font-size: 16px; font-weight: 600; color: var(--text-primary);">${point.title}</div>
                             </div>
-                            <div class="checkpoint-desc">${point.desc}</div>
-                            <div class="evidence-title">${t('evidenceTitle')}</div>
-                            <ul class="evidence-list">
-                                ${point.evidence.map((e, idx) => `
-                                    <li onclick="toggleEvidence('${point.id}', ${idx})">
-                                        <input type="checkbox" class="evidence-checkbox" id="${point.id}-ev-${idx}" onchange="saveToStorage()">
-                                        <label for="${point.id}-ev-${idx}" style="cursor: pointer; margin-left: 5px;">${e}</label>
-                                    </li>
-                                `).join('')}
-                            </ul>
-                            <div class="status-box">
-                                <div class="status-options">
-                                    <label><input type="radio" name="${point.id}" value="conforme" onchange="updateStatus('${point.id}')"> ${t('statusCompliant')}</label>
-                                    <label><input type="radio" name="${point.id}" value="non-conforme" onchange="updateStatus('${point.id}')"> ${t('statusNonCompliant')}</label>
-                                    <label><input type="radio" name="${point.id}" value="partiel" onchange="updateStatus('${point.id}')"> ${t('statusPartial')}</label>
-                                    <label><input type="radio" name="${point.id}" value="na" onchange="updateStatus('${point.id}')"> ${t('statusNA')}</label>
+                            <p style="color: var(--text-secondary); margin-bottom: 15px;">${point.desc}</p>
+
+                            <div style="display: flex; gap: 10px; margin: 15px 0; flex-wrap: wrap;">
+                                <div style="display: flex; align-items: center; gap: 5px;">
+                                    <input type="radio" id="${point.id}-conforme" name="${point.id}" value="conforme" onchange="updateStatus('${point.id}')">
+                                    <label for="${point.id}-conforme" style="cursor: pointer; font-size: 14px;">Conforme</label>
                                 </div>
-                                <label class="comment-label">${t('comments')}</label>
-                                <textarea class="comment-box" data-comment="${point.id}" onchange="saveToStorage()" placeholder="${t('commentsPlaceholder')}"></textarea>
+                                <div style="display: flex; align-items: center; gap: 5px;">
+                                    <input type="radio" id="${point.id}-non-conforme" name="${point.id}" value="non-conforme" onchange="updateStatus('${point.id}')">
+                                    <label for="${point.id}-non-conforme" style="cursor: pointer; font-size: 14px;">Non conforme</label>
+                                </div>
+                                <div style="display: flex; align-items: center; gap: 5px;">
+                                    <input type="radio" id="${point.id}-partiel" name="${point.id}" value="partiel" onchange="updateStatus('${point.id}')">
+                                    <label for="${point.id}-partiel" style="cursor: pointer; font-size: 14px;">Partiel</label>
+                                </div>
+                                <div style="display: flex; align-items: center; gap: 5px;">
+                                    <input type="radio" id="${point.id}-na" name="${point.id}" value="na" onchange="updateStatus('${point.id}')">
+                                    <label for="${point.id}-na" style="cursor: pointer; font-size: 14px;">N/A</label>
+                                </div>
                             </div>
-                            <div class="action-box">
-                                <label class="action-label">${t('actions')}</label>
-                                <textarea class="action-textarea" data-action="${point.id}" onchange="saveToStorage()" placeholder="${t('actionsPlaceholder')}"></textarea>
+
+                            <div style="margin-top: 15px; padding: 15px; background: var(--bg-info); border-radius: 5px;">
+                                <h4 style="margin: 0 0 10px 0; font-size: 14px; color: var(--text-secondary);">Preuves à vérifier :</h4>
+                                ${point.evidence.map((ev, idx) => `
+                                    <div style="display: flex; align-items: center; gap: 10px; padding: 8px; margin-bottom: 5px; background: var(--bg-primary); border-radius: 3px;">
+                                        <input type="checkbox" id="${point.id}-ev-${idx}">
+                                        <label for="${point.id}-ev-${idx}">${ev}</label>
+                                    </div>
+                                `).join('')}
                             </div>
+
+                            <textarea data-comment="${point.id}" placeholder="Commentaires / Observations..." style="width: 100%; padding: 10px; border: 1px solid var(--border-color); border-radius: 5px; font-family: inherit; font-size: 14px; margin-top: 10px; background: var(--bg-primary); color: var(--text-primary); resize: vertical; min-height: 80px;"></textarea>
+                            <textarea data-action="${point.id}" placeholder="Actions de remédiation recommandées..." style="width: 100%; padding: 10px; border: 1px solid var(--border-color); border-radius: 5px; font-family: inherit; font-size: 14px; margin-top: 10px; background: var(--bg-primary); color: var(--text-primary); resize: vertical; min-height: 80px;"></textarea>
                         </div>
                     `;
                 });
-                
-                html += '</div>';
+
+                categoryDiv.innerHTML = html;
+                container.appendChild(categoryDiv);
             });
-            
-            container.innerHTML = html;
         }
 
-        // Initialisation
-        document.addEventListener('DOMContentLoaded', function() {
-            // Charger la langue sauvegardée
-            currentLang = localStorage.getItem('language') || 'fr';
-            
-            // Générer le contenu
-            generateCheckpoints();
-            initChart();
-            
-            // Charger les données sauvegardées
-            loadFromStorage();
-            
-            // Appliquer la langue (après que le DOM soit prêt)
-            setTimeout(() => {
-                updateLanguage();
-                updateAllStats();
-            }, 100);
-        });
-
-        // Gestion du thème
-        function toggleTheme() {
-            const html = document.documentElement;
-            const currentTheme = html.getAttribute('data-theme');
-            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
-            html.setAttribute('data-theme', newTheme);
-            localStorage.setItem('theme', newTheme);
-            showToast(newTheme === 'dark' ? t('themeDark') : t('themeLight'));
-        }
-
-        // Charger le thème sauvegardé
-        const savedTheme = localStorage.getItem('theme');
-        if (savedTheme) {
-            document.documentElement.setAttribute('data-theme', savedTheme);
-        }
-
-        // Toggle sidebar
-        function toggleSidebar() {
-            const sidebar = document.getElementById('sidebar');
-            const mainContent = document.getElementById('mainContent');
-            sidebar.classList.toggle('collapsed');
-            mainContent.classList.toggle('expanded');
-        }
-
-        // Toggle evidence checkbox
-        function toggleEvidence(checkpointId, evidenceIndex) {
-            const checkbox = document.getElementById(`${checkpointId}-ev-${evidenceIndex}`);
-            const li = checkbox.parentElement;
-            
-            if (checkbox.checked) {
-                li.classList.add('checked');
-            } else {
-                li.classList.remove('checked');
-            }
-            
-            saveToStorage();
-        }
-
-        // Mise à jour du statut d'un checkpoint
+        // ===== STATUS UPDATE =====
         function updateStatus(checkpointId) {
+            const checkpoint = document.querySelector(`[data-id="${checkpointId}"]`);
             const radios = document.getElementsByName(checkpointId);
-            let selectedValue = null;
-            
+
             radios.forEach(radio => {
                 if (radio.checked) {
-                    selectedValue = radio.value;
+                    const colors = {
+                        'conforme': '#27ae60',
+                        'non-conforme': '#e74c3c',
+                        'partiel': '#f39c12',
+                        'na': '#95a5a6'
+                    };
+                    checkpoint.style.borderLeftColor = colors[radio.value] || '#ddd';
                 }
             });
-            
-            const checkpoint = document.querySelector(`[data-id="${checkpointId}"]`);
-            const statusBadge = checkpoint.querySelector('.checkpoint-status');
-            
-            if (selectedValue && selectedValue !== 'na') {
-                statusBadge.style.display = 'block';
-                statusBadge.className = 'checkpoint-status status-' + selectedValue;
-                statusBadge.textContent = {
-                    'conforme': 'Conforme',
-                    'non-conforme': 'Non conforme',
-                    'partiel': 'Partiel'
-                }[selectedValue];
-            } else {
-                statusBadge.style.display = 'none';
-            }
-            
-            saveToStorage();
-            updateAllStats();
+
+            updateStats();
         }
 
-        // Mise à jour de toutes les statistiques
-        function updateAllStats() {
+        // ===== STATS CALCULATION =====
+        function calculateStats() {
             let total = 0;
+            let completed = 0;
             let conforme = 0;
             let nonConforme = 0;
             let partiel = 0;
             let na = 0;
-            let completed = 0; // Nombre total de réponses (incluant N/A)
-            
-            const categoryStats = {};
-            
+
             Object.keys(checkpoints).forEach(category => {
-                categoryStats[category] = { total: 0, completed: 0 };
-                
                 checkpoints[category].forEach(point => {
                     total++;
-                    categoryStats[category].total++;
-                    
                     const radios = document.getElementsByName(point.id);
-                    let checked = false;
-                    
+
                     radios.forEach(radio => {
                         if (radio.checked) {
-                            checked = true;
-                            completed++; // Compte toutes les réponses, y compris N/A
-                            categoryStats[category].completed++;
-                            
+                            completed++;
                             switch(radio.value) {
                                 case 'conforme': conforme++; break;
                                 case 'non-conforme': nonConforme++; break;
@@ -1387,105 +1090,83 @@
                     });
                 });
             });
-            
-            // Mise à jour des cartes de stats
-            document.getElementById('conformeCount').textContent = conforme;
-            document.getElementById('nonConformeCount').textContent = nonConforme;
-            document.getElementById('partielCount').textContent = partiel;
-            document.getElementById('naCount').textContent = total - completed; // Seulement les non-répondus
-            
-            // Mise à jour de la barre de progression basée sur TOUTES les réponses
-            const percentage = Math.round((completed / total) * 100);
-            document.getElementById('progressBar').style.width = percentage + '%';
-            document.getElementById('progressLabel').textContent = `${completed} ${t('on')} ${total} ${t('pointsCompleted')} (${percentage}%)`;
-            document.getElementById('progressText').textContent = percentage + '%';
-            
-            // Mise à jour du cercle de progression
-            const circumference = 220;
-            const offset = circumference - (percentage / 100) * circumference;
-            document.getElementById('progressCircle').style.strokeDashoffset = offset;
-            
-            // Mise à jour des stats par catégorie
-            Object.keys(categoryStats).forEach(category => {
-                const stat = categoryStats[category];
-                const elem = document.getElementById(`progress-${category}`);
-                if (elem) {
-                    elem.textContent = `${stat.completed}/${stat.total}`;
-                }
-                
-                const statElem = document.getElementById(`stat-${category.substring(0, 3)}`);
-                if (statElem) {
-                    statElem.textContent = `${stat.completed}/${stat.total}`;
-                }
-            });
-            
-            // Mise à jour du graphique
-            updateChart(conforme, nonConforme, partiel, na);
+
+            return {
+                total,
+                completed,
+                conforme,
+                nonConforme,
+                partiel,
+                na,
+                percentage: total > 0 ? Math.round((completed / total) * 100) : 0
+            };
         }
 
-        // Initialisation du graphique
-        function initChart() {
-            const ctx = document.getElementById('statusChart').getContext('2d');
-            statusChart = new Chart(ctx, {
-                type: 'doughnut',
-                data: {
-                    labels: ['Conformes', 'Non conformes', 'Partiels', 'Non vérifiés'],
-                    datasets: [{
-                        data: [0, 0, 0, 27],
-                        backgroundColor: ['#27ae60', '#e74c3c', '#f39c12', '#95a5a6'],
-                        borderWidth: 2,
-                        borderColor: '#fff'
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: {
-                            position: 'bottom',
-                            labels: {
-                                padding: 15,
-                                font: { size: 14 }
-                            }
-                        }
-                    }
+        function updateStats() {
+            const stats = calculateStats();
+
+            document.getElementById('globalProgress').textContent = stats.percentage + '%';
+            document.getElementById('completedCount').textContent = stats.completed;
+            document.getElementById('conformeCount').textContent = stats.conforme;
+            document.getElementById('nonConformeCount').textContent = stats.nonConforme;
+            document.getElementById('partielCount').textContent = stats.partiel;
+            document.getElementById('conformePercent').textContent = Math.round((stats.conforme / stats.total) * 100) + '%';
+            document.getElementById('nonConformePercent').textContent = Math.round((stats.nonConforme / stats.total) * 100) + '%';
+            document.getElementById('partielPercent').textContent = Math.round((stats.partiel / stats.total) * 100) + '%';
+
+            // Mise à jour des catégories
+            Object.keys(checkpoints).forEach(categoryKey => {
+                let catCompleted = 0;
+                checkpoints[categoryKey].forEach(point => {
+                    const radios = document.getElementsByName(point.id);
+                    radios.forEach(radio => {
+                        if (radio.checked) catCompleted++;
+                    });
+                });
+
+                const statElement = document.getElementById(`category-stats-${categoryKey}`);
+                if (statElement) {
+                    statElement.textContent = `${catCompleted}/${checkpoints[categoryKey].length}`;
                 }
             });
         }
 
-        // Mise à jour du graphique
-        function updateChart(conforme, nonConforme, partiel, na) {
-            if (statusChart) {
-                statusChart.data.datasets[0].data = [conforme, nonConforme, partiel, na];
-                statusChart.update();
+        // ===== SAVE AUDIT TO HISTORY =====
+        async function saveAuditToHistory() {
+            const auditName = document.getElementById('auditName').value.trim();
+
+            if (!auditName) {
+                showToast('Veuillez saisir un nom pour l\'audit', true);
+                return;
             }
-        }
 
-        // Sauvegarde dans localStorage
-        function saveToStorage() {
-            const data = {
+            const auditData = {
+                id: currentAuditId || undefined,
+                name: auditName,
                 site: document.getElementById('site').value,
                 auditDate: document.getElementById('auditDate').value,
                 auditor: document.getElementById('auditor').value,
                 responsible: document.getElementById('responsible').value,
-                checkpoints: {}
+                status: document.getElementById('auditStatus').value,
+                createdAt: currentAuditId ? undefined : new Date().toISOString(),
+                updatedAt: new Date().toISOString(),
+                checkpoints: {},
+                stats: calculateStats()
             };
-            
+
+            // Collecter les données des checkpoints
             Object.keys(checkpoints).forEach(category => {
                 checkpoints[category].forEach(point => {
                     const radios = document.getElementsByName(point.id);
                     let status = null;
-                    
+
                     radios.forEach(radio => {
                         if (radio.checked) status = radio.value;
                     });
-                    
+
                     const comment = document.querySelector(`[data-comment="${point.id}"]`).value;
-                    
-                    // Récupérer les actions de remédiation
                     const action = document.querySelector(`[data-action="${point.id}"]`).value;
-                    
-                    // Sauvegarder les preuves cochées
+
                     const evidenceChecked = [];
                     point.evidence.forEach((ev, idx) => {
                         const checkbox = document.getElementById(`${point.id}-ev-${idx}`);
@@ -1493,35 +1174,172 @@
                             evidenceChecked.push(idx);
                         }
                     });
-                    
-                    data.checkpoints[point.id] = {
-                        status: status,
-                        comment: comment,
-                        action: action,
-                        evidenceChecked: evidenceChecked
+
+                    auditData.checkpoints[point.id] = {
+                        status,
+                        comment,
+                        action,
+                        evidenceChecked
                     };
                 });
             });
-            
-            localStorage.setItem('auditData', JSON.stringify(data));
+
+            try {
+                const id = await saveAuditToDB(auditData);
+                currentAuditId = id;
+                showToast('Audit sauvegardé avec succès !');
+                loadHistory();
+            } catch (error) {
+                console.error('Erreur de sauvegarde:', error);
+                showToast('Erreur lors de la sauvegarde', true);
+            }
         }
 
-        // Chargement depuis localStorage
-        function loadFromStorage() {
-            const stored = localStorage.getItem('auditData');
-            if (!stored) return;
-            
+        // ===== LOAD HISTORY =====
+        async function loadHistory() {
             try {
-                const data = JSON.parse(stored);
-                
-                document.getElementById('site').value = data.site || '';
-                document.getElementById('auditDate').value = data.auditDate || '';
-                document.getElementById('auditor').value = data.auditor || '';
-                document.getElementById('responsible').value = data.responsible || '';
-                
-                Object.keys(data.checkpoints).forEach(checkpointId => {
-                    const checkpoint = data.checkpoints[checkpointId];
-                    
+                const audits = await getAllAudits();
+                renderHistoryStats(audits);
+                renderAuditsTable(audits);
+                populateCompareSelects(audits);
+            } catch (error) {
+                console.error('Erreur de chargement:', error);
+            }
+        }
+
+        function renderHistoryStats(audits) {
+            const total = audits.length;
+            const draft = audits.filter(a => a.status === 'draft').length;
+            const inProgress = audits.filter(a => a.status === 'in-progress').length;
+            const completed = audits.filter(a => a.status === 'completed').length;
+            const validated = audits.filter(a => a.status === 'validated').length;
+
+            const statsHTML = `
+                <div class="history-stat-card">
+                    <h4>Total Audits</h4>
+                    <div class="value">${total}</div>
+                </div>
+                <div class="history-stat-card" style="border-left-color: #95a5a6;">
+                    <h4>Brouillon</h4>
+                    <div class="value" style="color: #95a5a6;">${draft}</div>
+                </div>
+                <div class="history-stat-card" style="border-left-color: #3498db;">
+                    <h4>En cours</h4>
+                    <div class="value" style="color: #3498db;">${inProgress}</div>
+                </div>
+                <div class="history-stat-card" style="border-left-color: #27ae60;">
+                    <h4>Terminé</h4>
+                    <div class="value" style="color: #27ae60;">${completed}</div>
+                </div>
+                <div class="history-stat-card" style="border-left-color: #8e44ad;">
+                    <h4>Validé</h4>
+                    <div class="value" style="color: #8e44ad;">${validated}</div>
+                </div>
+            `;
+
+            document.getElementById('historyStats').innerHTML = statsHTML;
+        }
+
+        function renderAuditsTable(audits) {
+            const container = document.getElementById('auditsTableContainer');
+
+            if (audits.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">📋</div>
+                        <h3>Aucun audit sauvegardé</h3>
+                        <p>Commencez par créer votre premier audit</p>
+                        <button class="btn btn-primary" onclick="showPage('audit'); resetAuditForm();">Créer un audit</button>
+                    </div>
+                `;
+                return;
+            }
+
+            let tableHTML = `
+                <table class="audits-table">
+                    <thead>
+                        <tr>
+                            <th>Nom</th>
+                            <th>Site</th>
+                            <th>Date</th>
+                            <th>Auditeur</th>
+                            <th>Statut</th>
+                            <th>Progression</th>
+                            <th>Modifié</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+
+            audits.forEach(audit => {
+                const statusLabels = {
+                    'draft': 'Brouillon',
+                    'in-progress': 'En cours',
+                    'completed': 'Terminé',
+                    'validated': 'Validé'
+                };
+
+                const updatedDate = new Date(audit.updatedAt).toLocaleDateString('fr-FR');
+                const progress = audit.stats?.percentage || 0;
+
+                tableHTML += `
+                    <tr>
+                        <td><strong>${audit.name}</strong></td>
+                        <td>${audit.site || '-'}</td>
+                        <td>${audit.auditDate ? new Date(audit.auditDate).toLocaleDateString('fr-FR') : '-'}</td>
+                        <td>${audit.auditor || '-'}</td>
+                        <td><span class="status-badge ${audit.status}">${statusLabels[audit.status]}</span></td>
+                        <td>
+                            <div style="display: flex; align-items: center; gap: 10px;">
+                                <span>${progress}%</span>
+                                <div class="progress-mini">
+                                    <div class="progress-mini-bar" style="width: ${progress}%"></div>
+                                </div>
+                            </div>
+                        </td>
+                        <td>${updatedDate}</td>
+                        <td>
+                            <div class="action-buttons">
+                                <button class="btn btn-primary btn-small" onclick="loadAudit(${audit.id})" title="Ouvrir">Ouvrir</button>
+                                <button class="btn btn-danger btn-small" onclick="showDeleteModal(${audit.id})" title="Supprimer">Suppr.</button>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            });
+
+            tableHTML += `
+                    </tbody>
+                </table>
+            `;
+
+            container.innerHTML = tableHTML;
+        }
+
+        // ===== LOAD AUDIT =====
+        async function loadAudit(id) {
+            try {
+                const audit = await getAuditById(id);
+                if (!audit) {
+                    showToast('Audit introuvable', true);
+                    return;
+                }
+
+                currentAuditId = audit.id;
+
+                // Remplir le formulaire
+                document.getElementById('auditName').value = audit.name;
+                document.getElementById('site').value = audit.site || '';
+                document.getElementById('auditDate').value = audit.auditDate || '';
+                document.getElementById('auditor').value = audit.auditor || '';
+                document.getElementById('responsible').value = audit.responsible || '';
+                document.getElementById('auditStatus').value = audit.status || 'draft';
+
+                // Charger les checkpoints
+                Object.keys(audit.checkpoints).forEach(checkpointId => {
+                    const checkpoint = audit.checkpoints[checkpointId];
+
                     if (checkpoint.status) {
                         const radio = document.querySelector(`input[name="${checkpointId}"][value="${checkpoint.status}"]`);
                         if (radio) {
@@ -1529,169 +1347,393 @@
                             updateStatus(checkpointId);
                         }
                     }
-                    
+
                     if (checkpoint.comment) {
                         const commentBox = document.querySelector(`[data-comment="${checkpointId}"]`);
                         if (commentBox) commentBox.value = checkpoint.comment;
                     }
-                    
-                    // Restaurer les actions de remédiation
+
                     if (checkpoint.action) {
                         const actionBox = document.querySelector(`[data-action="${checkpointId}"]`);
                         if (actionBox) actionBox.value = checkpoint.action;
                     }
-                    
-                    // Restaurer les preuves cochées
+
                     if (checkpoint.evidenceChecked && checkpoint.evidenceChecked.length > 0) {
                         checkpoint.evidenceChecked.forEach(idx => {
                             const checkbox = document.getElementById(`${checkpointId}-ev-${idx}`);
-                            if (checkbox) {
-                                checkbox.checked = true;
-                                checkbox.parentElement.classList.add('checked');
-                            }
+                            if (checkbox) checkbox.checked = true;
                         });
                     }
                 });
-                
-                showToast(t('loaded'));
-            } catch (e) {
-                console.error('Erreur lors du chargement:', e);
+
+                updateStats();
+                showPage('audit');
+                showToast('Audit chargé avec succès');
+
+            } catch (error) {
+                console.error('Erreur de chargement:', error);
+                showToast('Erreur lors du chargement', true);
             }
         }
 
-        // Sauvegarde manuelle
-        function saveProgress() {
-            saveToStorage();
-            showToast(t('saved'));
+        // ===== DELETE AUDIT =====
+        function showDeleteModal(id) {
+            deleteAuditId = id;
+            document.getElementById('deleteModal').classList.add('show');
         }
 
-        // Chargement manuel
-        function loadProgress() {
-            loadFromStorage();
-            updateAllStats();
+        async function confirmDelete() {
+            if (!deleteAuditId) return;
+
+            try {
+                await deleteAuditFromDB(deleteAuditId);
+                showToast('Audit supprimé avec succès');
+                closeModal('deleteModal');
+                deleteAuditId = null;
+                loadHistory();
+
+                if (currentAuditId === deleteAuditId) {
+                    resetAuditForm();
+                }
+            } catch (error) {
+                console.error('Erreur de suppression:', error);
+                showToast('Erreur lors de la suppression', true);
+            }
         }
 
-        // Export JSON
-        function exportJSON() {
-            const stored = localStorage.getItem('auditData');
-            if (!stored) {
-                showToast(t('noData'), true);
+        // ===== FILTER AUDITS =====
+        async function filterAudits() {
+            const search = document.getElementById('historySearch').value.toLowerCase();
+            const statusFilter = document.getElementById('statusFilter').value;
+            const sortFilter = document.getElementById('sortFilter').value;
+
+            let audits = await getAllAudits();
+
+            // Filtrer par recherche
+            if (search) {
+                audits = audits.filter(audit =>
+                    audit.name.toLowerCase().includes(search) ||
+                    (audit.site && audit.site.toLowerCase().includes(search)) ||
+                    (audit.auditor && audit.auditor.toLowerCase().includes(search))
+                );
+            }
+
+            // Filtrer par statut
+            if (statusFilter !== 'all') {
+                audits = audits.filter(audit => audit.status === statusFilter);
+            }
+
+            // Trier
+            audits.sort((a, b) => {
+                switch(sortFilter) {
+                    case 'date-desc':
+                        return new Date(b.updatedAt) - new Date(a.updatedAt);
+                    case 'date-asc':
+                        return new Date(a.updatedAt) - new Date(b.updatedAt);
+                    case 'name-asc':
+                        return a.name.localeCompare(b.name);
+                    case 'name-desc':
+                        return b.name.localeCompare(a.name);
+                    case 'progress-desc':
+                        return (b.stats?.percentage || 0) - (a.stats?.percentage || 0);
+                    case 'progress-asc':
+                        return (a.stats?.percentage || 0) - (b.stats?.percentage || 0);
+                    default:
+                        return 0;
+                }
+            });
+
+            renderAuditsTable(audits);
+        }
+
+        // ===== COMPARISON =====
+        function populateCompareSelects(audits) {
+            const select1 = document.getElementById('compareAudit1');
+            const select2 = document.getElementById('compareAudit2');
+
+            select1.innerHTML = '<option value="">Sélectionner un audit...</option>';
+            select2.innerHTML = '<option value="">Sélectionner un audit...</option>';
+
+            audits.forEach(audit => {
+                const option1 = new Option(audit.name, audit.id);
+                const option2 = new Option(audit.name, audit.id);
+                select1.add(option1);
+                select2.add(option2);
+            });
+        }
+
+        async function performComparison() {
+            const id1 = parseInt(document.getElementById('compareAudit1').value);
+            const id2 = parseInt(document.getElementById('compareAudit2').value);
+
+            if (!id1 || !id2) {
+                showToast('Veuillez sélectionner deux audits', true);
                 return;
             }
-            
-            const data = JSON.parse(stored);
-            const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `audit-${data.site || 'site'}-${data.auditDate || 'date'}.json`;
-            a.click();
-            URL.revokeObjectURL(url);
-            showToast(t('exported'));
-        }
 
-        // Recherche de checkpoints
-        function searchCheckpoints() {
-            const searchTerm = document.getElementById('searchBar').value.toLowerCase();
-            const allCheckpoints = document.querySelectorAll('.checkpoint');
-            
-            allCheckpoints.forEach(checkpoint => {
-                const text = checkpoint.textContent.toLowerCase();
-                if (text.includes(searchTerm)) {
-                    checkpoint.classList.remove('hidden');
-                } else {
-                    checkpoint.classList.add('hidden');
-                }
-            });
-        }
+            if (id1 === id2) {
+                showToast('Veuillez sélectionner deux audits différents', true);
+                return;
+            }
 
-        // Filtrage par statut
-        let currentFilter = 'all';
-        function filterByStatus(status) {
-            currentFilter = status;
-            const allCheckpoints = document.querySelectorAll('.checkpoint');
-            
-            // Mise à jour des boutons de filtre
-            document.querySelectorAll('.filter-btn').forEach(btn => {
-                btn.classList.remove('active');
-            });
-            
-            // Trouver et activer le bon bouton
-            const buttons = document.querySelectorAll('.filter-btn');
-            buttons.forEach(btn => {
-                const btnText = btn.textContent.toLowerCase();
-                if (
-                    (status === 'all' && btnText.includes('tous')) ||
-                    (status === 'conforme' && btnText.includes('conformes') && !btnText.includes('non')) ||
-                    (status === 'non-conforme' && btnText.includes('non conformes')) ||
-                    (status === 'partiel' && btnText.includes('partiels')) ||
-                    (status === 'na' && btnText.includes('non vérifiés'))
-                ) {
-                    btn.classList.add('active');
-                }
-            });
-            
-            allCheckpoints.forEach(checkpoint => {
-                const checkpointId = checkpoint.getAttribute('data-id');
-                const radios = document.getElementsByName(checkpointId);
-                let checkpointStatus = null;
-                
-                radios.forEach(radio => {
-                    if (radio.checked) checkpointStatus = radio.value;
+            try {
+                const audit1 = await getAuditById(id1);
+                const audit2 = await getAuditById(id2);
+
+                const resultsDiv = document.getElementById('comparisonResults');
+
+                let html = `
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px; margin-top: 30px;">
+                        <div>
+                            <h3 style="margin-bottom: 20px;">${audit1.name}</h3>
+                            <div class="stat-card">
+                                <h4>Progression</h4>
+                                <div class="stat-value">${audit1.stats?.percentage || 0}%</div>
+                            </div>
+                            <div class="stat-card" style="margin-top: 15px;">
+                                <h4>Conformes</h4>
+                                <div class="stat-value" style="color: var(--conforme);">${audit1.stats?.conforme || 0}</div>
+                            </div>
+                            <div class="stat-card" style="margin-top: 15px;">
+                                <h4>Non conformes</h4>
+                                <div class="stat-value" style="color: var(--non-conforme);">${audit1.stats?.nonConforme || 0}</div>
+                            </div>
+                            <div class="stat-card" style="margin-top: 15px;">
+                                <h4>Partiels</h4>
+                                <div class="stat-value" style="color: var(--partiel);">${audit1.stats?.partiel || 0}</div>
+                            </div>
+                        </div>
+
+                        <div>
+                            <h3 style="margin-bottom: 20px;">${audit2.name}</h3>
+                            <div class="stat-card">
+                                <h4>Progression</h4>
+                                <div class="stat-value">${audit2.stats?.percentage || 0}%</div>
+                            </div>
+                            <div class="stat-card" style="margin-top: 15px;">
+                                <h4>Conformes</h4>
+                                <div class="stat-value" style="color: var(--conforme);">${audit2.stats?.conforme || 0}</div>
+                            </div>
+                            <div class="stat-card" style="margin-top: 15px;">
+                                <h4>Non conformes</h4>
+                                <div class="stat-value" style="color: var(--non-conforme);">${audit2.stats?.nonConforme || 0}</div>
+                            </div>
+                            <div class="stat-card" style="margin-top: 15px;">
+                                <h4>Partiels</h4>
+                                <div class="stat-value" style="color: var(--partiel);">${audit2.stats?.partiel || 0}</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <h3 style="margin-top: 40px; margin-bottom: 20px;">Différences par checkpoint</h3>
+                    <table class="audits-table">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Checkpoint</th>
+                                <th>${audit1.name}</th>
+                                <th>${audit2.name}</th>
+                                <th>Différence</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                `;
+
+                Object.keys(checkpoints).forEach(category => {
+                    checkpoints[category].forEach(point => {
+                        const status1 = audit1.checkpoints[point.id]?.status || 'N/A';
+                        const status2 = audit2.checkpoints[point.id]?.status || 'N/A';
+                        const isDifferent = status1 !== status2;
+
+                        html += `
+                            <tr style="${isDifferent ? 'background: rgba(243, 156, 18, 0.1);' : ''}">
+                                <td><strong>${point.id}</strong></td>
+                                <td>${point.title}</td>
+                                <td>${status1}</td>
+                                <td>${status2}</td>
+                                <td>${isDifferent ? '⚠️ Différent' : '✓ Identique'}</td>
+                            </tr>
+                        `;
+                    });
                 });
-                
-                // Si aucun statut n'est sélectionné, on considère que c'est "na" (non vérifié)
-                if (!checkpointStatus) {
-                    checkpointStatus = 'na';
+
+                html += `
+                        </tbody>
+                    </table>
+                `;
+
+                resultsDiv.innerHTML = html;
+
+            } catch (error) {
+                console.error('Erreur de comparaison:', error);
+                showToast('Erreur lors de la comparaison', true);
+            }
+        }
+
+        // ===== EXPORT/IMPORT =====
+        async function exportAllAuditsJSON() {
+            try {
+                const audits = await getAllAudits();
+                const blob = new Blob([JSON.stringify(audits, null, 2)], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `audits-export-${new Date().toISOString().split('T')[0]}.json`;
+                a.click();
+                URL.revokeObjectURL(url);
+                showToast('Export réussi !');
+            } catch (error) {
+                console.error('Erreur d\'export:', error);
+                showToast('Erreur lors de l\'export', true);
+            }
+        }
+
+        function importAuditsJSON() {
+            document.getElementById('importFileInput').click();
+        }
+
+        async function handleImportFile(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            try {
+                const text = await file.text();
+                const audits = JSON.parse(text);
+
+                if (!Array.isArray(audits)) {
+                    throw new Error('Format invalide');
                 }
-                
-                if (status === 'all' || checkpointStatus === status) {
-                    checkpoint.classList.remove('hidden');
-                } else {
-                    checkpoint.classList.add('hidden');
+
+                for (const audit of audits) {
+                    delete audit.id; // Supprimer l'ID pour éviter les conflits
+                    await saveAuditToDB(audit);
                 }
+
+                showToast(`${audits.length} audit(s) importé(s) avec succès !`);
+                loadHistory();
+
+            } catch (error) {
+                console.error('Erreur d\'import:', error);
+                showToast('Erreur lors de l\'import - Fichier invalide', true);
+            }
+
+            event.target.value = '';
+        }
+
+        function exportJSON() {
+            showToast('Utilisez "Sauvegarder l\'audit" pour sauvegarder dans l\'historique', 'info');
+        }
+
+        function exportExcel() {
+            showToast('Fonctionnalité Excel à venir', 'info');
+        }
+
+        function exportPDF() {
+            showToast('Fonctionnalité PDF à venir', 'info');
+        }
+
+        // ===== UTILITIES =====
+        function showPage(pageName) {
+            document.querySelectorAll('.page').forEach(page => {
+                page.classList.remove('active');
+            });
+
+            document.querySelectorAll('.nav-link').forEach(link => {
+                link.classList.remove('active');
+            });
+
+            if (pageName === 'audit') {
+                document.getElementById('auditPage').classList.add('active');
+                document.querySelectorAll('.nav-link')[0].classList.add('active');
+            } else if (pageName === 'history') {
+                document.getElementById('historyPage').classList.add('active');
+                document.querySelectorAll('.nav-link')[1].classList.add('active');
+                loadHistory();
+            } else if (pageName === 'compare') {
+                document.getElementById('comparePage').classList.add('active');
+                document.querySelectorAll('.nav-link')[2].classList.add('active');
+                loadHistory(); // Pour remplir les selects
+            }
+        }
+
+        function resetAuditForm() {
+            currentAuditId = null;
+            document.getElementById('auditName').value = '';
+            document.getElementById('site').value = '';
+            document.getElementById('auditDate').value = new Date().toISOString().split('T')[0];
+            document.getElementById('auditor').value = '';
+            document.getElementById('responsible').value = '';
+            document.getElementById('auditStatus').value = 'draft';
+
+            // Réinitialiser tous les checkpoints
+            document.querySelectorAll('input[type="radio"]').forEach(radio => {
+                radio.checked = false;
+            });
+
+            document.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
+                checkbox.checked = false;
+            });
+
+            document.querySelectorAll('textarea').forEach(textarea => {
+                textarea.value = '';
+            });
+
+            updateStats();
+        }
+
+        function toggleSidebar() {
+            document.getElementById('sidebar').classList.toggle('collapsed');
+            document.getElementById('mainContent').classList.toggle('expanded');
+        }
+
+        function toggleTheme() {
+            const html = document.documentElement;
+            const currentTheme = html.getAttribute('data-theme');
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            html.setAttribute('data-theme', newTheme);
+            localStorage.setItem('theme', newTheme);
+
+            const btn = document.getElementById('themeToggle');
+            btn.textContent = newTheme === 'dark' ? '☀️' : '🌙';
+        }
+
+        function toggleLanguage() {
+            currentLanguage = currentLanguage === 'fr' ? 'en' : 'fr';
+            const btn = document.getElementById('langToggle');
+            btn.textContent = currentLanguage === 'fr' ? '🇫🇷' : '🇬🇧';
+            showToast('Langue changée - Fonctionnalité complète à venir', 'info');
+        }
+
+        function toggleCategory(categoryId) {
+            const checkpoints = document.querySelectorAll(`[data-id^="${categoryId.substring(0, 3)}"]`);
+            checkpoints.forEach(cp => {
+                cp.style.display = cp.style.display === 'none' ? 'block' : 'none';
             });
         }
 
-        // Afficher une notification toast
-        function showToast(message, isError = false) {
+        function closeModal(modalId) {
+            document.getElementById(modalId).classList.remove('show');
+        }
+
+        function showToast(message, type = 'success') {
             const toast = document.getElementById('toast');
             toast.textContent = message;
-            toast.className = 'toast show' + (isError ? ' error' : '');
-            
+            toast.className = 'toast show';
+
+            if (type === 'error') toast.classList.add('error');
+            if (type === 'info') toast.classList.add('info');
+
             setTimeout(() => {
                 toast.classList.remove('show');
             }, 3000);
         }
 
-        // Toggle catégorie (plier/déplier)
-        function toggleCategory(categoryId) {
-            const category = document.getElementById(categoryId);
-            const checkpoints = category.querySelectorAll('.checkpoint');
-            
-            checkpoints.forEach(checkpoint => {
-                if (checkpoint.style.display === 'none') {
-                    checkpoint.style.display = 'block';
-                } else {
-                    checkpoint.style.display = 'none';
-                }
-            });
+        // Charger le thème sauvegardé
+        const savedTheme = localStorage.getItem('theme') || 'light';
+        document.documentElement.setAttribute('data-theme', savedTheme);
+        if (savedTheme === 'dark') {
+            document.getElementById('themeToggle').textContent = '☀️';
         }
-
-        // Smooth scroll pour la navigation
-        document.querySelectorAll('.nav-link').forEach(link => {
-            link.addEventListener('click', function(e) {
-                e.preventDefault();
-                const targetId = this.getAttribute('href').substring(1);
-                const target = document.getElementById(targetId);
-                if (target) {
-                    target.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                }
-            });
-        });
-
-        // Sauvegarde automatique toutes les 30 secondes
-        setInterval(saveToStorage, 30000);
     </script>
 </body>
 </html>
