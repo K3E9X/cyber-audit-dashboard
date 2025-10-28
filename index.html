@@ -963,18 +963,589 @@
         let currentLanguage = 'fr';
         let deleteAuditId = null; // ID de l'audit à supprimer
 
+        // ===== TRANSLATIONS =====
+        const translations = {
+            fr: {
+                // Navigation
+                navNewAudit: 'Nouvel Audit',
+                navHistory: 'Historique',
+                navComparison: 'Comparaison',
+
+                // Page Audit
+                pageTitle: 'Audit de Cybersécurité Industriel',
+                auditNameLabel: 'Nom de l\'audit *',
+                auditNamePlaceholder: 'Ex: Audit Site Paris Q4 2024',
+                siteLabel: 'Site audité',
+                sitePlaceholder: 'Nom du site',
+                dateLabel: 'Date d\'audit',
+                auditorLabel: 'Auditeur',
+                auditorPlaceholder: 'Nom de l\'auditeur',
+                responsibleLabel: 'Responsable sécurité',
+                responsiblePlaceholder: 'Nom du responsable',
+                statusLabel: 'Statut de l\'audit',
+
+                // Buttons
+                btnSave: 'Sauvegarder l\'audit',
+                btnExportJSON: 'Export JSON',
+                btnExportExcel: 'Export Excel',
+                btnExportPDF: 'Export PDF',
+                btnNewAudit: 'Nouvel Audit',
+                btnExportAll: 'Exporter Tout (JSON)',
+                btnImport: 'Importer',
+                btnCompare: 'Comparer',
+                btnOpen: 'Ouvrir',
+                btnDelete: 'Suppr.',
+                btnCancel: 'Annuler',
+                btnConfirm: 'Supprimer',
+                btnCreateAudit: 'Créer un audit',
+
+                // Status
+                statusDraft: 'Brouillon',
+                statusInProgress: 'En cours',
+                statusCompleted: 'Terminé',
+                statusValidated: 'Validé',
+                statusAll: 'Tous les statuts',
+
+                // Stats
+                globalProgress: 'Progression globale',
+                compliant: 'Conformes',
+                nonCompliant: 'Non conformes',
+                partial: 'Partiels',
+                checkpointsLabel: 'checkpoints',
+
+                // History page
+                historyTitle: 'Historique des Audits',
+                historySubtitle: 'Gérez tous vos audits sauvegardés',
+                totalAudits: 'Total Audits',
+                searchPlaceholder: 'Rechercher par nom, site...',
+
+                // Sort options
+                sortDateDesc: 'Plus récent',
+                sortDateAsc: 'Plus ancien',
+                sortNameAsc: 'Nom (A-Z)',
+                sortNameDesc: 'Nom (Z-A)',
+                sortProgressDesc: 'Progression (desc)',
+                sortProgressAsc: 'Progression (asc)',
+
+                // Table headers
+                thName: 'Nom',
+                thSite: 'Site',
+                thDate: 'Date',
+                thAuditor: 'Auditeur',
+                thStatus: 'Statut',
+                thProgress: 'Progression',
+                thModified: 'Modifié',
+                thActions: 'Actions',
+
+                // Comparison page
+                compareTitle: 'Comparaison d\'Audits',
+                compareSubtitle: 'Comparez deux audits côte à côte',
+                selectAudit: 'Sélectionner un audit...',
+                audit1Label: 'Audit 1',
+                audit2Label: 'Audit 2',
+                differencesTitle: 'Différences par checkpoint',
+                thCheckpoint: 'Checkpoint',
+                thDifference: 'Différence',
+                different: '⚠️ Différent',
+                identical: '✓ Identique',
+
+                // Empty state
+                emptyStateTitle: 'Aucun audit sauvegardé',
+                emptyStateText: 'Commencez par créer votre premier audit',
+
+                // Modal
+                confirmDeleteTitle: 'Confirmer la suppression',
+                confirmDeleteText: 'Êtes-vous sûr de vouloir supprimer cet audit ?',
+                confirmDeleteWarning: 'Cette action est irréversible.',
+
+                // Checkpoints
+                compliantLabel: 'Conforme',
+                nonCompliantLabel: 'Non conforme',
+                partialLabel: 'Partiel',
+                naLabel: 'N/A',
+                evidenceTitle: 'Preuves à vérifier :',
+                commentPlaceholder: 'Commentaires / Observations...',
+                actionPlaceholder: 'Actions de remédiation recommandées...',
+
+                // Toast messages
+                toastSaved: 'Audit sauvegardé avec succès !',
+                toastLoaded: 'Audit chargé avec succès',
+                toastDeleted: 'Audit supprimé avec succès',
+                toastExported: 'Export réussi !',
+                toastImported: 'audit(s) importé(s) avec succès !',
+                toastErrorSave: 'Erreur lors de la sauvegarde',
+                toastErrorLoad: 'Erreur lors du chargement',
+                toastErrorDelete: 'Erreur lors de la suppression',
+                toastErrorExport: 'Erreur lors de l\'export',
+                toastErrorImport: 'Erreur lors de l\'import - Fichier invalide',
+                toastErrorDB: 'Erreur d\'initialisation de la base de données',
+                toastErrorName: 'Veuillez saisir un nom pour l\'audit',
+                toastErrorNotFound: 'Audit introuvable',
+                toastErrorSelect2: 'Veuillez sélectionner deux audits',
+                toastErrorSelectDiff: 'Veuillez sélectionner deux audits différents',
+                toastErrorComparison: 'Erreur lors de la comparaison',
+                toastInfoSaveHistory: 'Utilisez "Sauvegarder l\'audit" pour sauvegarder dans l\'historique',
+                toastInfoExcelSoon: 'Fonctionnalité Excel à venir',
+                toastInfoPDFSoon: 'Fonctionnalité PDF à venir',
+                toastInfoLanguageChanged: 'Langue changée',
+
+                // Loading
+                loadingText: 'Chargement en cours...',
+
+                // Categories
+                catGovernance: 'Gouvernance',
+                catResources: 'Ressources',
+                catAccessControl: 'Contrôle d\'accès',
+                catAssets: 'Actifs',
+                catPhysical: 'Sécurité physique'
+            },
+            en: {
+                // Navigation
+                navNewAudit: 'New Audit',
+                navHistory: 'History',
+                navComparison: 'Comparison',
+
+                // Page Audit
+                pageTitle: 'Industrial Cybersecurity Audit',
+                auditNameLabel: 'Audit name *',
+                auditNamePlaceholder: 'Ex: Paris Site Audit Q4 2024',
+                siteLabel: 'Audited site',
+                sitePlaceholder: 'Site name',
+                dateLabel: 'Audit date',
+                auditorLabel: 'Auditor',
+                auditorPlaceholder: 'Auditor name',
+                responsibleLabel: 'Security manager',
+                responsiblePlaceholder: 'Manager name',
+                statusLabel: 'Audit status',
+
+                // Buttons
+                btnSave: 'Save audit',
+                btnExportJSON: 'Export JSON',
+                btnExportExcel: 'Export Excel',
+                btnExportPDF: 'Export PDF',
+                btnNewAudit: 'New Audit',
+                btnExportAll: 'Export All (JSON)',
+                btnImport: 'Import',
+                btnCompare: 'Compare',
+                btnOpen: 'Open',
+                btnDelete: 'Delete',
+                btnCancel: 'Cancel',
+                btnConfirm: 'Delete',
+                btnCreateAudit: 'Create audit',
+
+                // Status
+                statusDraft: 'Draft',
+                statusInProgress: 'In Progress',
+                statusCompleted: 'Completed',
+                statusValidated: 'Validated',
+                statusAll: 'All statuses',
+
+                // Stats
+                globalProgress: 'Overall Progress',
+                compliant: 'Compliant',
+                nonCompliant: 'Non-Compliant',
+                partial: 'Partial',
+                checkpointsLabel: 'checkpoints',
+
+                // History page
+                historyTitle: 'Audit History',
+                historySubtitle: 'Manage all your saved audits',
+                totalAudits: 'Total Audits',
+                searchPlaceholder: 'Search by name, site...',
+
+                // Sort options
+                sortDateDesc: 'Most recent',
+                sortDateAsc: 'Oldest',
+                sortNameAsc: 'Name (A-Z)',
+                sortNameDesc: 'Name (Z-A)',
+                sortProgressDesc: 'Progress (desc)',
+                sortProgressAsc: 'Progress (asc)',
+
+                // Table headers
+                thName: 'Name',
+                thSite: 'Site',
+                thDate: 'Date',
+                thAuditor: 'Auditor',
+                thStatus: 'Status',
+                thProgress: 'Progress',
+                thModified: 'Modified',
+                thActions: 'Actions',
+
+                // Comparison page
+                compareTitle: 'Audit Comparison',
+                compareSubtitle: 'Compare two audits side by side',
+                selectAudit: 'Select an audit...',
+                audit1Label: 'Audit 1',
+                audit2Label: 'Audit 2',
+                differencesTitle: 'Differences by checkpoint',
+                thCheckpoint: 'Checkpoint',
+                thDifference: 'Difference',
+                different: '⚠️ Different',
+                identical: '✓ Identical',
+
+                // Empty state
+                emptyStateTitle: 'No saved audits',
+                emptyStateText: 'Start by creating your first audit',
+
+                // Modal
+                confirmDeleteTitle: 'Confirm deletion',
+                confirmDeleteText: 'Are you sure you want to delete this audit?',
+                confirmDeleteWarning: 'This action is irreversible.',
+
+                // Checkpoints
+                compliantLabel: 'Compliant',
+                nonCompliantLabel: 'Non-Compliant',
+                partialLabel: 'Partial',
+                naLabel: 'N/A',
+                evidenceTitle: 'Evidence to verify:',
+                commentPlaceholder: 'Comments / Observations...',
+                actionPlaceholder: 'Recommended remediation actions...',
+
+                // Toast messages
+                toastSaved: 'Audit saved successfully!',
+                toastLoaded: 'Audit loaded successfully',
+                toastDeleted: 'Audit deleted successfully',
+                toastExported: 'Export successful!',
+                toastImported: 'audit(s) imported successfully!',
+                toastErrorSave: 'Error saving',
+                toastErrorLoad: 'Error loading',
+                toastErrorDelete: 'Error deleting',
+                toastErrorExport: 'Error exporting',
+                toastErrorImport: 'Import error - Invalid file',
+                toastErrorDB: 'Database initialization error',
+                toastErrorName: 'Please enter an audit name',
+                toastErrorNotFound: 'Audit not found',
+                toastErrorSelect2: 'Please select two audits',
+                toastErrorSelectDiff: 'Please select two different audits',
+                toastErrorComparison: 'Comparison error',
+                toastInfoSaveHistory: 'Use "Save audit" to save to history',
+                toastInfoExcelSoon: 'Excel feature coming soon',
+                toastInfoPDFSoon: 'PDF feature coming soon',
+                toastInfoLanguageChanged: 'Language changed',
+
+                // Loading
+                loadingText: 'Loading...',
+
+                // Categories
+                catGovernance: 'Governance',
+                catResources: 'Resources',
+                catAccessControl: 'Access Control',
+                catAssets: 'Assets',
+                catPhysical: 'Physical Security'
+            }
+        };
+
+        // Checkpoints translations
+        const checkpointsTranslations = {
+            fr: {
+                'GOU-01': {
+                    title: 'Pilotage de la cybersécurité',
+                    desc: 'Vérifier l\'existence et le suivi d\'une politique de cybersécurité',
+                    evidence: ['Contrat de maintenance cybersécurité', 'Compte-rendus de comité de pilotage', 'Plan d\'action de sécurité']
+                },
+                'RES-01': {
+                    title: 'Cartographie du SI',
+                    desc: 'Disposer d\'une cartographie à jour du système d\'information',
+                    evidence: ['Schéma réseau', 'Inventaire des équipements', 'Documentation CMDB']
+                },
+                'RES-02': {
+                    title: 'Segmentation réseau',
+                    desc: 'Vérifier la séparation des réseaux IT/OT',
+                    evidence: ['Schéma de segmentation', 'Configuration firewall', 'Règles de filtrage']
+                },
+                'RES-03': {
+                    title: 'Architecture sécurisée',
+                    desc: 'Évaluer l\'architecture de sécurité mise en place',
+                    evidence: ['Schéma d\'architecture', 'DMZ configurée', 'Zones de sécurité définies']
+                },
+                'RES-04': {
+                    title: 'Supervision réseau',
+                    desc: 'Vérifier la présence d\'outils de supervision',
+                    evidence: ['Solution SIEM', 'Logs centralisés', 'Alertes configurées']
+                },
+                'RES-05': {
+                    title: 'Sauvegarde',
+                    desc: 'Contrôler la stratégie de sauvegarde',
+                    evidence: ['Plan de sauvegarde', 'Tests de restauration', 'Sauvegardes externalisées']
+                },
+                'RES-06': {
+                    title: 'Plan de continuité',
+                    desc: 'Vérifier l\'existence d\'un PCA/PRA',
+                    evidence: ['Document PCA', 'Document PRA', 'Tests annuels']
+                },
+                'RES-07': {
+                    title: 'Gestion des vulnérabilités',
+                    desc: 'Contrôler le processus de gestion des vulnérabilités',
+                    evidence: ['Scan de vulnérabilités', 'Plan de remédiation', 'Suivi des correctifs']
+                },
+                'RES-08': {
+                    title: 'Antivirus / EDR',
+                    desc: 'Vérifier le déploiement et la mise à jour des solutions antivirales',
+                    evidence: ['Console antivirus', 'Taux de couverture', 'Mises à jour automatiques']
+                },
+                'RES-09': {
+                    title: 'Pare-feu',
+                    desc: 'Contrôler la configuration et la gestion des pare-feu',
+                    evidence: ['Règles de filtrage', 'Logs firewall', 'Revue annuelle des règles']
+                },
+                'ACC-01': {
+                    title: 'Gestion des comptes',
+                    desc: 'Vérifier la gestion du cycle de vie des comptes utilisateurs',
+                    evidence: ['Procédure de création/suppression', 'Revue des comptes', 'Comptes orphelins']
+                },
+                'ACC-02': {
+                    title: 'Authentification forte',
+                    desc: 'Contrôler la mise en place de l\'authentification multifacteur',
+                    evidence: ['MFA activé', 'Taux d\'adoption', 'Solutions déployées']
+                },
+                'ACC-03': {
+                    title: 'Politique de mots de passe',
+                    desc: 'Évaluer la robustesse de la politique de mots de passe',
+                    evidence: ['Politique écrite', 'Complexité requise', 'Durée de validité']
+                },
+                'ACC-04': {
+                    title: 'Gestion des privilèges',
+                    desc: 'Contrôler la gestion des comptes à privilèges',
+                    evidence: ['Liste des comptes admin', 'Traçabilité des actions', 'Revue trimestrielle']
+                },
+                'ACC-05': {
+                    title: 'Gestion des accès distants',
+                    desc: 'Vérifier la sécurisation des accès distants',
+                    evidence: ['VPN configuré', 'Chiffrement activé', 'Logs des connexions']
+                },
+                'ACC-06': {
+                    title: 'Gestion des accès tiers',
+                    desc: 'Contrôler les accès des prestataires et fournisseurs',
+                    evidence: ['Contrats signés', 'Accès temporaires', 'Traçabilité']
+                },
+                'ACC-07': {
+                    title: 'Journalisation',
+                    desc: 'Vérifier la mise en place de la journalisation',
+                    evidence: ['Logs centralisés', 'Durée de rétention', 'Protection des logs']
+                },
+                'ACC-08': {
+                    title: 'Droits d\'accès',
+                    desc: 'Contrôler l\'application du principe du moindre privilège',
+                    evidence: ['Matrice des droits', 'Revue semestrielle', 'Séparation des tâches']
+                },
+                'ACC-09': {
+                    title: 'Départ d\'utilisateurs',
+                    desc: 'Vérifier le processus de désactivation des comptes',
+                    evidence: ['Procédure de départ', 'Délais de désactivation', 'Restitution matériel']
+                },
+                'ACT-01': {
+                    title: 'Gestion des correctifs',
+                    desc: 'Contrôler la gestion des mises à jour de sécurité',
+                    evidence: ['Planning de patching', 'Taux d\'application', 'Tests avant déploiement']
+                },
+                'ACT-02': {
+                    title: 'Sécurité des postes',
+                    desc: 'Vérifier la sécurisation des postes de travail',
+                    evidence: ['Chiffrement disque', 'Verrouillage automatique', 'Politique BYOD']
+                },
+                'ACT-03': {
+                    title: 'Sécurité des serveurs',
+                    desc: 'Contrôler le durcissement des serveurs',
+                    evidence: ['Baseline de sécurité', 'Services désactivés', 'Audit de configuration']
+                },
+                'ACT-04': {
+                    title: 'Protection des données',
+                    desc: 'Vérifier les mesures de protection des données sensibles',
+                    evidence: ['Classification des données', 'Chiffrement', 'DLP activé']
+                },
+                'ACT-05': {
+                    title: 'Gestion du matériel',
+                    desc: 'Contrôler le cycle de vie du matériel',
+                    evidence: ['Inventaire matériel', 'Procédure de destruction', 'Traçabilité']
+                },
+                'ACT-06': {
+                    title: 'Supports amovibles',
+                    desc: 'Vérifier la politique d\'usage des supports amovibles',
+                    evidence: ['Politique écrite', 'Contrôle USB', 'Chiffrement requis']
+                },
+                'PHY-01': {
+                    title: 'Contrôle d\'accès physique',
+                    desc: 'Vérifier les dispositifs de contrôle d\'accès aux locaux sensibles',
+                    evidence: ['Badges d\'accès', 'Registre des visiteurs', 'Vidéosurveillance']
+                },
+                'PHY-02': {
+                    title: 'Sécurité des salles techniques',
+                    desc: 'Contrôler la sécurisation des salles serveurs/techniques',
+                    evidence: ['Accès restreint', 'Détection incendie', 'Climatisation']
+                }
+            },
+            en: {
+                'GOU-01': {
+                    title: 'Cybersecurity Governance',
+                    desc: 'Verify the existence and monitoring of a cybersecurity policy',
+                    evidence: ['Cybersecurity maintenance contract', 'Steering committee minutes', 'Security action plan']
+                },
+                'RES-01': {
+                    title: 'IS Mapping',
+                    desc: 'Have an up-to-date map of the information system',
+                    evidence: ['Network diagram', 'Equipment inventory', 'CMDB documentation']
+                },
+                'RES-02': {
+                    title: 'Network Segmentation',
+                    desc: 'Verify the separation of IT/OT networks',
+                    evidence: ['Segmentation diagram', 'Firewall configuration', 'Filtering rules']
+                },
+                'RES-03': {
+                    title: 'Secure Architecture',
+                    desc: 'Assess the security architecture in place',
+                    evidence: ['Architecture diagram', 'Configured DMZ', 'Defined security zones']
+                },
+                'RES-04': {
+                    title: 'Network Monitoring',
+                    desc: 'Verify the presence of monitoring tools',
+                    evidence: ['SIEM solution', 'Centralized logs', 'Configured alerts']
+                },
+                'RES-05': {
+                    title: 'Backup',
+                    desc: 'Control the backup strategy',
+                    evidence: ['Backup plan', 'Restore tests', 'External backups']
+                },
+                'RES-06': {
+                    title: 'Continuity Plan',
+                    desc: 'Verify the existence of a BCP/DRP',
+                    evidence: ['BCP document', 'DRP document', 'Annual tests']
+                },
+                'RES-07': {
+                    title: 'Vulnerability Management',
+                    desc: 'Control the vulnerability management process',
+                    evidence: ['Vulnerability scans', 'Remediation plan', 'Patch tracking']
+                },
+                'RES-08': {
+                    title: 'Antivirus / EDR',
+                    desc: 'Verify deployment and updates of antivirus solutions',
+                    evidence: ['Antivirus console', 'Coverage rate', 'Automatic updates']
+                },
+                'RES-09': {
+                    title: 'Firewall',
+                    desc: 'Control firewall configuration and management',
+                    evidence: ['Filtering rules', 'Firewall logs', 'Annual rules review']
+                },
+                'ACC-01': {
+                    title: 'Account Management',
+                    desc: 'Verify user account lifecycle management',
+                    evidence: ['Creation/deletion procedure', 'Account review', 'Orphaned accounts']
+                },
+                'ACC-02': {
+                    title: 'Strong Authentication',
+                    desc: 'Control multi-factor authentication implementation',
+                    evidence: ['MFA enabled', 'Adoption rate', 'Deployed solutions']
+                },
+                'ACC-03': {
+                    title: 'Password Policy',
+                    desc: 'Assess the robustness of the password policy',
+                    evidence: ['Written policy', 'Required complexity', 'Validity period']
+                },
+                'ACC-04': {
+                    title: 'Privilege Management',
+                    desc: 'Control privileged account management',
+                    evidence: ['Admin account list', 'Action traceability', 'Quarterly review']
+                },
+                'ACC-05': {
+                    title: 'Remote Access Management',
+                    desc: 'Verify remote access security',
+                    evidence: ['Configured VPN', 'Encryption enabled', 'Connection logs']
+                },
+                'ACC-06': {
+                    title: 'Third-Party Access Management',
+                    desc: 'Control contractor and supplier access',
+                    evidence: ['Signed contracts', 'Temporary access', 'Traceability']
+                },
+                'ACC-07': {
+                    title: 'Logging',
+                    desc: 'Verify logging implementation',
+                    evidence: ['Centralized logs', 'Retention period', 'Log protection']
+                },
+                'ACC-08': {
+                    title: 'Access Rights',
+                    desc: 'Control application of least privilege principle',
+                    evidence: ['Rights matrix', 'Biannual review', 'Separation of duties']
+                },
+                'ACC-09': {
+                    title: 'User Departure',
+                    desc: 'Verify account deactivation process',
+                    evidence: ['Departure procedure', 'Deactivation delays', 'Equipment return']
+                },
+                'ACT-01': {
+                    title: 'Patch Management',
+                    desc: 'Control security update management',
+                    evidence: ['Patching schedule', 'Application rate', 'Pre-deployment tests']
+                },
+                'ACT-02': {
+                    title: 'Workstation Security',
+                    desc: 'Verify workstation security',
+                    evidence: ['Disk encryption', 'Auto-lock', 'BYOD policy']
+                },
+                'ACT-03': {
+                    title: 'Server Security',
+                    desc: 'Control server hardening',
+                    evidence: ['Security baseline', 'Disabled services', 'Configuration audit']
+                },
+                'ACT-04': {
+                    title: 'Data Protection',
+                    desc: 'Verify sensitive data protection measures',
+                    evidence: ['Data classification', 'Encryption', 'DLP enabled']
+                },
+                'ACT-05': {
+                    title: 'Hardware Management',
+                    desc: 'Control hardware lifecycle',
+                    evidence: ['Hardware inventory', 'Destruction procedure', 'Traceability']
+                },
+                'ACT-06': {
+                    title: 'Removable Media',
+                    desc: 'Verify removable media usage policy',
+                    evidence: ['Written policy', 'USB control', 'Required encryption']
+                },
+                'PHY-01': {
+                    title: 'Physical Access Control',
+                    desc: 'Verify physical access control devices for sensitive areas',
+                    evidence: ['Access badges', 'Visitor log', 'Video surveillance']
+                },
+                'PHY-02': {
+                    title: 'Technical Room Security',
+                    desc: 'Control server/technical room security',
+                    evidence: ['Restricted access', 'Fire detection', 'Air conditioning']
+                }
+            }
+        };
+
+        // Get translation
+        function t(key) {
+            return translations[currentLanguage][key] || key;
+        }
+
+        // Get checkpoint translation
+        function tc(checkpointId, field) {
+            return checkpointsTranslations[currentLanguage][checkpointId]?.[field] || '';
+        }
+
         // ===== INITIALIZATION =====
         document.addEventListener('DOMContentLoaded', async function() {
             try {
+                // Load saved language
+                const savedLanguage = localStorage.getItem('language') || 'fr';
+                currentLanguage = savedLanguage;
+                const langBtn = document.getElementById('langToggle');
+                if (langBtn) {
+                    langBtn.textContent = currentLanguage === 'fr' ? '🇫🇷' : '🇬🇧';
+                }
+
                 await initDB();
                 renderCheckpoints();
                 loadHistory();
 
                 const today = new Date().toISOString().split('T')[0];
                 document.getElementById('auditDate').value = today;
+
+                // Apply translations after page is loaded
+                applyTranslations();
             } catch (error) {
                 console.error('Erreur d\'initialisation:', error);
-                showToast('Erreur d\'initialisation de la base de données', true);
+                showToast(t('toastErrorDB'), true);
             }
         });
 
@@ -983,48 +1554,60 @@
             const container = document.getElementById('checkpointsContainer');
             container.innerHTML = '';
 
+            const categoryNamesTranslated = {
+                gouvernance: t('catGovernance'),
+                ressources: t('catResources'),
+                controle: t('catAccessControl'),
+                actifs: t('catAssets'),
+                physique: t('catPhysical')
+            };
+
             Object.keys(checkpoints).forEach(categoryKey => {
                 const categoryDiv = document.createElement('div');
                 categoryDiv.style.marginBottom = '30px';
 
                 let html = `
                     <div style="background: var(--bg-category); color: white; padding: 15px 20px; border-radius: 8px 8px 0 0; cursor: pointer;" onclick="toggleCategory('${categoryKey}')">
-                        <span style="font-size: 18px; font-weight: 600;">${categoryNames[categoryKey]}</span>
+                        <span style="font-size: 18px; font-weight: 600;">${categoryNamesTranslated[categoryKey]}</span>
                         <span id="category-stats-${categoryKey}" style="float: right;">0/${checkpoints[categoryKey].length}</span>
                     </div>
                 `;
 
                 checkpoints[categoryKey].forEach(point => {
+                    const translatedTitle = tc(point.id, 'title') || point.title;
+                    const translatedDesc = tc(point.id, 'desc') || point.desc;
+                    const translatedEvidence = tc(point.id, 'evidence') || point.evidence;
+
                     html += `
                         <div style="background: var(--bg-checkpoint); padding: 20px; margin-bottom: 15px; border-radius: 8px; border-left: 4px solid var(--border-color);" data-id="${point.id}">
                             <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 15px;">
                                 <span style="background: var(--accent-blue); color: white; padding: 5px 10px; border-radius: 5px; font-weight: bold; font-size: 12px;">${point.id}</span>
-                                <div style="flex: 1; margin: 0 15px; font-size: 16px; font-weight: 600; color: var(--text-primary);">${point.title}</div>
+                                <div style="flex: 1; margin: 0 15px; font-size: 16px; font-weight: 600; color: var(--text-primary);">${translatedTitle}</div>
                             </div>
-                            <p style="color: var(--text-secondary); margin-bottom: 15px;">${point.desc}</p>
+                            <p style="color: var(--text-secondary); margin-bottom: 15px;">${translatedDesc}</p>
 
                             <div style="display: flex; gap: 10px; margin: 15px 0; flex-wrap: wrap;">
                                 <div style="display: flex; align-items: center; gap: 5px;">
                                     <input type="radio" id="${point.id}-conforme" name="${point.id}" value="conforme" onchange="updateStatus('${point.id}')">
-                                    <label for="${point.id}-conforme" style="cursor: pointer; font-size: 14px;">Conforme</label>
+                                    <label for="${point.id}-conforme" style="cursor: pointer; font-size: 14px;">${t('compliantLabel')}</label>
                                 </div>
                                 <div style="display: flex; align-items: center; gap: 5px;">
                                     <input type="radio" id="${point.id}-non-conforme" name="${point.id}" value="non-conforme" onchange="updateStatus('${point.id}')">
-                                    <label for="${point.id}-non-conforme" style="cursor: pointer; font-size: 14px;">Non conforme</label>
+                                    <label for="${point.id}-non-conforme" style="cursor: pointer; font-size: 14px;">${t('nonCompliantLabel')}</label>
                                 </div>
                                 <div style="display: flex; align-items: center; gap: 5px;">
                                     <input type="radio" id="${point.id}-partiel" name="${point.id}" value="partiel" onchange="updateStatus('${point.id}')">
-                                    <label for="${point.id}-partiel" style="cursor: pointer; font-size: 14px;">Partiel</label>
+                                    <label for="${point.id}-partiel" style="cursor: pointer; font-size: 14px;">${t('partialLabel')}</label>
                                 </div>
                                 <div style="display: flex; align-items: center; gap: 5px;">
                                     <input type="radio" id="${point.id}-na" name="${point.id}" value="na" onchange="updateStatus('${point.id}')">
-                                    <label for="${point.id}-na" style="cursor: pointer; font-size: 14px;">N/A</label>
+                                    <label for="${point.id}-na" style="cursor: pointer; font-size: 14px;">${t('naLabel')}</label>
                                 </div>
                             </div>
 
                             <div style="margin-top: 15px; padding: 15px; background: var(--bg-info); border-radius: 5px;">
-                                <h4 style="margin: 0 0 10px 0; font-size: 14px; color: var(--text-secondary);">Preuves à vérifier :</h4>
-                                ${point.evidence.map((ev, idx) => `
+                                <h4 style="margin: 0 0 10px 0; font-size: 14px; color: var(--text-secondary);">${t('evidenceTitle')}</h4>
+                                ${translatedEvidence.map((ev, idx) => `
                                     <div style="display: flex; align-items: center; gap: 10px; padding: 8px; margin-bottom: 5px; background: var(--bg-primary); border-radius: 3px;">
                                         <input type="checkbox" id="${point.id}-ev-${idx}">
                                         <label for="${point.id}-ev-${idx}">${ev}</label>
@@ -1032,8 +1615,8 @@
                                 `).join('')}
                             </div>
 
-                            <textarea data-comment="${point.id}" placeholder="Commentaires / Observations..." style="width: 100%; padding: 10px; border: 1px solid var(--border-color); border-radius: 5px; font-family: inherit; font-size: 14px; margin-top: 10px; background: var(--bg-primary); color: var(--text-primary); resize: vertical; min-height: 80px;"></textarea>
-                            <textarea data-action="${point.id}" placeholder="Actions de remédiation recommandées..." style="width: 100%; padding: 10px; border: 1px solid var(--border-color); border-radius: 5px; font-family: inherit; font-size: 14px; margin-top: 10px; background: var(--bg-primary); color: var(--text-primary); resize: vertical; min-height: 80px;"></textarea>
+                            <textarea data-comment="${point.id}" placeholder="${t('commentPlaceholder')}" style="width: 100%; padding: 10px; border: 1px solid var(--border-color); border-radius: 5px; font-family: inherit; font-size: 14px; margin-top: 10px; background: var(--bg-primary); color: var(--text-primary); resize: vertical; min-height: 80px;"></textarea>
+                            <textarea data-action="${point.id}" placeholder="${t('actionPlaceholder')}" style="width: 100%; padding: 10px; border: 1px solid var(--border-color); border-radius: 5px; font-family: inherit; font-size: 14px; margin-top: 10px; background: var(--bg-primary); color: var(--text-primary); resize: vertical; min-height: 80px;"></textarea>
                         </div>
                     `;
                 });
@@ -1136,7 +1719,7 @@
             const auditName = document.getElementById('auditName').value.trim();
 
             if (!auditName) {
-                showToast('Veuillez saisir un nom pour l\'audit', true);
+                showToast(t('toastErrorName'), true);
                 return;
             }
 
@@ -1187,11 +1770,11 @@
             try {
                 const id = await saveAuditToDB(auditData);
                 currentAuditId = id;
-                showToast('Audit sauvegardé avec succès !');
+                showToast(t('toastSaved'));
                 loadHistory();
             } catch (error) {
                 console.error('Erreur de sauvegarde:', error);
-                showToast('Erreur lors de la sauvegarde', true);
+                showToast(t('toastErrorSave'), true);
             }
         }
 
@@ -1216,23 +1799,23 @@
 
             const statsHTML = `
                 <div class="history-stat-card">
-                    <h4>Total Audits</h4>
+                    <h4>${t('totalAudits')}</h4>
                     <div class="value">${total}</div>
                 </div>
                 <div class="history-stat-card" style="border-left-color: #95a5a6;">
-                    <h4>Brouillon</h4>
+                    <h4>${t('statusDraft')}</h4>
                     <div class="value" style="color: #95a5a6;">${draft}</div>
                 </div>
                 <div class="history-stat-card" style="border-left-color: #3498db;">
-                    <h4>En cours</h4>
+                    <h4>${t('statusInProgress')}</h4>
                     <div class="value" style="color: #3498db;">${inProgress}</div>
                 </div>
                 <div class="history-stat-card" style="border-left-color: #27ae60;">
-                    <h4>Terminé</h4>
+                    <h4>${t('statusCompleted')}</h4>
                     <div class="value" style="color: #27ae60;">${completed}</div>
                 </div>
                 <div class="history-stat-card" style="border-left-color: #8e44ad;">
-                    <h4>Validé</h4>
+                    <h4>${t('statusValidated')}</h4>
                     <div class="value" style="color: #8e44ad;">${validated}</div>
                 </div>
             `;
@@ -1247,47 +1830,48 @@
                 container.innerHTML = `
                     <div class="empty-state">
                         <div class="empty-state-icon">📋</div>
-                        <h3>Aucun audit sauvegardé</h3>
-                        <p>Commencez par créer votre premier audit</p>
-                        <button class="btn btn-primary" onclick="showPage('audit'); resetAuditForm();">Créer un audit</button>
+                        <h3>${t('emptyStateTitle')}</h3>
+                        <p>${t('emptyStateText')}</p>
+                        <button class="btn btn-primary" onclick="showPage('audit'); resetAuditForm();">${t('btnCreateAudit')}</button>
                     </div>
                 `;
                 return;
             }
 
+            const statusLabels = {
+                'draft': t('statusDraft'),
+                'in-progress': t('statusInProgress'),
+                'completed': t('statusCompleted'),
+                'validated': t('statusValidated')
+            };
+
             let tableHTML = `
                 <table class="audits-table">
                     <thead>
                         <tr>
-                            <th>Nom</th>
-                            <th>Site</th>
-                            <th>Date</th>
-                            <th>Auditeur</th>
-                            <th>Statut</th>
-                            <th>Progression</th>
-                            <th>Modifié</th>
-                            <th>Actions</th>
+                            <th>${t('thName')}</th>
+                            <th>${t('thSite')}</th>
+                            <th>${t('thDate')}</th>
+                            <th>${t('thAuditor')}</th>
+                            <th>${t('thStatus')}</th>
+                            <th>${t('thProgress')}</th>
+                            <th>${t('thModified')}</th>
+                            <th>${t('thActions')}</th>
                         </tr>
                     </thead>
                     <tbody>
             `;
 
             audits.forEach(audit => {
-                const statusLabels = {
-                    'draft': 'Brouillon',
-                    'in-progress': 'En cours',
-                    'completed': 'Terminé',
-                    'validated': 'Validé'
-                };
-
-                const updatedDate = new Date(audit.updatedAt).toLocaleDateString('fr-FR');
+                const locale = currentLanguage === 'fr' ? 'fr-FR' : 'en-US';
+                const updatedDate = new Date(audit.updatedAt).toLocaleDateString(locale);
                 const progress = audit.stats?.percentage || 0;
 
                 tableHTML += `
                     <tr>
                         <td><strong>${audit.name}</strong></td>
                         <td>${audit.site || '-'}</td>
-                        <td>${audit.auditDate ? new Date(audit.auditDate).toLocaleDateString('fr-FR') : '-'}</td>
+                        <td>${audit.auditDate ? new Date(audit.auditDate).toLocaleDateString(locale) : '-'}</td>
                         <td>${audit.auditor || '-'}</td>
                         <td><span class="status-badge ${audit.status}">${statusLabels[audit.status]}</span></td>
                         <td>
@@ -1301,8 +1885,8 @@
                         <td>${updatedDate}</td>
                         <td>
                             <div class="action-buttons">
-                                <button class="btn btn-primary btn-small" onclick="loadAudit(${audit.id})" title="Ouvrir">Ouvrir</button>
-                                <button class="btn btn-danger btn-small" onclick="showDeleteModal(${audit.id})" title="Supprimer">Suppr.</button>
+                                <button class="btn btn-primary btn-small" onclick="loadAudit(${audit.id})" title="${t('btnOpen')}">${t('btnOpen')}</button>
+                                <button class="btn btn-danger btn-small" onclick="showDeleteModal(${audit.id})" title="${t('btnDelete')}">${t('btnDelete')}</button>
                             </div>
                         </td>
                     </tr>
@@ -1322,7 +1906,7 @@
             try {
                 const audit = await getAuditById(id);
                 if (!audit) {
-                    showToast('Audit introuvable', true);
+                    showToast(t('toastErrorNotFound'), true);
                     return;
                 }
 
@@ -1368,11 +1952,11 @@
 
                 updateStats();
                 showPage('audit');
-                showToast('Audit chargé avec succès');
+                showToast(t('toastLoaded'));
 
             } catch (error) {
                 console.error('Erreur de chargement:', error);
-                showToast('Erreur lors du chargement', true);
+                showToast(t('toastErrorLoad'), true);
             }
         }
 
@@ -1387,7 +1971,7 @@
 
             try {
                 await deleteAuditFromDB(deleteAuditId);
-                showToast('Audit supprimé avec succès');
+                showToast(t('toastDeleted'));
                 closeModal('deleteModal');
                 deleteAuditId = null;
                 loadHistory();
@@ -1397,7 +1981,7 @@
                 }
             } catch (error) {
                 console.error('Erreur de suppression:', error);
-                showToast('Erreur lors de la suppression', true);
+                showToast(t('toastErrorDelete'), true);
             }
         }
 
@@ -1467,12 +2051,12 @@
             const id2 = parseInt(document.getElementById('compareAudit2').value);
 
             if (!id1 || !id2) {
-                showToast('Veuillez sélectionner deux audits', true);
+                showToast(t('toastErrorSelect2'), true);
                 return;
             }
 
             if (id1 === id2) {
-                showToast('Veuillez sélectionner deux audits différents', true);
+                showToast(t('toastErrorSelectDiff'), true);
                 return;
             }
 
@@ -1566,7 +2150,7 @@
 
             } catch (error) {
                 console.error('Erreur de comparaison:', error);
-                showToast('Erreur lors de la comparaison', true);
+                showToast(t('toastErrorComparison'), true);
             }
         }
 
@@ -1581,7 +2165,7 @@
                 a.download = `audits-export-${new Date().toISOString().split('T')[0]}.json`;
                 a.click();
                 URL.revokeObjectURL(url);
-                showToast('Export réussi !');
+                showToast(t('toastExported'));
             } catch (error) {
                 console.error('Erreur d\'export:', error);
                 showToast('Erreur lors de l\'export', true);
@@ -1609,7 +2193,7 @@
                     await saveAuditToDB(audit);
                 }
 
-                showToast(`${audits.length} audit(s) importé(s) avec succès !`);
+                showToast(`${audits.length} ${t('toastImported')}`);
                 loadHistory();
 
             } catch (error) {
@@ -1625,11 +2209,11 @@
         }
 
         function exportExcel() {
-            showToast('Fonctionnalité Excel à venir', 'info');
+            showToast(t('toastInfoExcelSoon'), 'info');
         }
 
         function exportPDF() {
-            showToast('Fonctionnalité PDF à venir', 'info');
+            showToast(t('toastInfoPDFSoon'), 'info');
         }
 
         // ===== UTILITIES =====
@@ -1697,11 +2281,157 @@
             btn.textContent = newTheme === 'dark' ? '☀️' : '🌙';
         }
 
+        function applyTranslations() {
+            // Update page title
+            document.title = t('pageTitle');
+
+            // Update navigation
+            const navLinks = document.querySelectorAll('.nav-link');
+            if (navLinks[0]) navLinks[0].textContent = t('navNewAudit');
+            if (navLinks[1]) navLinks[1].textContent = t('navHistory');
+            if (navLinks[2]) navLinks[2].textContent = t('navComparison');
+
+            // Update loading text
+            const loadingText = document.querySelector('.loading-text');
+            if (loadingText) loadingText.textContent = t('loadingText');
+
+            // Re-render the entire interface
+            renderCheckpoints();
+            updateCategoryNames();
+
+            // Update current page
+            const activePage = document.querySelector('.page.active');
+            if (activePage) {
+                if (activePage.id === 'auditPage') {
+                    updateAuditPageTranslations();
+                } else if (activePage.id === 'historyPage') {
+                    loadHistory();
+                } else if (activePage.id === 'comparePage') {
+                    updateComparePageTranslations();
+                }
+            }
+        }
+
+        function updateCategoryNames() {
+            const categoryNames = {
+                gouvernance: t('catGovernance'),
+                ressources: t('catResources'),
+                controle: t('catAccessControl'),
+                actifs: t('catAssets'),
+                physique: t('catPhysical')
+            };
+
+            Object.keys(categoryNames).forEach(key => {
+                const elem = document.querySelector(`[onclick="toggleCategory('${key}')"] span`);
+                if (elem) elem.textContent = categoryNames[key];
+            });
+        }
+
+        function updateAuditPageTranslations() {
+            // Update main title
+            const mainTitle = document.querySelector('#auditPage h1');
+            if (mainTitle) mainTitle.textContent = t('pageTitle');
+
+            // Update labels
+            const labels = {
+                'auditName': 'auditNameLabel',
+                'site': 'siteLabel',
+                'auditDate': 'dateLabel',
+                'auditor': 'auditorLabel',
+                'responsible': 'responsibleLabel',
+                'auditStatus': 'statusLabel'
+            };
+
+            Object.keys(labels).forEach(id => {
+                const input = document.getElementById(id);
+                if (input) {
+                    const label = input.previousElementSibling || input.parentElement.querySelector('label');
+                    if (label && label.tagName === 'LABEL') {
+                        label.textContent = t(labels[id]);
+                    }
+                    // Update placeholders
+                    if (id === 'auditName') input.placeholder = t('auditNamePlaceholder');
+                    if (id === 'site') input.placeholder = t('sitePlaceholder');
+                    if (id === 'auditor') input.placeholder = t('auditorPlaceholder');
+                    if (id === 'responsible') input.placeholder = t('responsiblePlaceholder');
+                }
+            });
+
+            // Update status options
+            const statusSelect = document.getElementById('auditStatus');
+            if (statusSelect) {
+                statusSelect.options[0].textContent = t('statusDraft');
+                statusSelect.options[1].textContent = t('statusInProgress');
+                statusSelect.options[2].textContent = t('statusCompleted');
+                statusSelect.options[3].textContent = t('statusValidated');
+            }
+
+            // Update buttons
+            const btnTexts = {
+                'btnSave': 'Sauvegarder l\'audit',
+                'btnExportJSON': 'Export JSON',
+                'btnExportExcel': 'Export Excel',
+                'btnExportPDF': 'Export PDF'
+            };
+
+            document.querySelectorAll('#auditPage .btn').forEach(btn => {
+                const text = btn.textContent.trim();
+                if (text.includes('Sauvegarder') || text.includes('Save')) {
+                    btn.textContent = t('btnSave');
+                } else if (text === 'Export JSON') {
+                    btn.textContent = t('btnExportJSON');
+                } else if (text.includes('Excel')) {
+                    btn.textContent = t('btnExportExcel');
+                } else if (text.includes('PDF')) {
+                    btn.textContent = t('btnExportPDF');
+                }
+            });
+
+            // Update stats cards
+            const statCards = document.querySelectorAll('#auditPage .stat-card h3');
+            if (statCards[0]) statCards[0].textContent = t('globalProgress');
+            if (statCards[1]) statCards[1].textContent = t('compliant');
+            if (statCards[2]) statCards[2].textContent = t('nonCompliant');
+            if (statCards[3]) statCards[3].textContent = t('partial');
+
+            // Update "sur X checkpoints" text
+            const completedLabel = document.querySelector('.stat-label');
+            if (completedLabel) {
+                const count = document.getElementById('completedCount')?.textContent || '0';
+                completedLabel.innerHTML = `<span id="completedCount">${count}</span> ${currentLanguage === 'fr' ? 'sur' : 'of'} 27 ${t('checkpointsLabel')}`;
+            }
+        }
+
+        function updateComparePageTranslations() {
+            // Update title and subtitle
+            const compareTitle = document.querySelector('#comparePage h1');
+            if (compareTitle) compareTitle.textContent = t('compareTitle');
+
+            const compareSubtitle = document.querySelector('#comparePage > .container > p');
+            if (compareSubtitle) compareSubtitle.textContent = t('compareSubtitle');
+
+            // Update labels
+            const labels = document.querySelectorAll('#comparePage .form-group label');
+            if (labels[0]) labels[0].textContent = t('audit1Label');
+            if (labels[1]) labels[1].textContent = t('audit2Label');
+
+            // Update select placeholders
+            const selects = document.querySelectorAll('#comparePage select option[value=""]');
+            selects.forEach(opt => opt.textContent = t('selectAudit'));
+
+            // Update compare button
+            const compareBtn = document.querySelector('#comparePage .btn-primary');
+            if (compareBtn) compareBtn.textContent = t('btnCompare');
+        }
+
         function toggleLanguage() {
             currentLanguage = currentLanguage === 'fr' ? 'en' : 'fr';
             const btn = document.getElementById('langToggle');
             btn.textContent = currentLanguage === 'fr' ? '🇫🇷' : '🇬🇧';
-            showToast('Langue changée - Fonctionnalité complète à venir', 'info');
+            localStorage.setItem('language', currentLanguage);
+
+            applyTranslations();
+            showToast(t('toastInfoLanguageChanged'), 'info');
         }
 
         function toggleCategory(categoryId) {
